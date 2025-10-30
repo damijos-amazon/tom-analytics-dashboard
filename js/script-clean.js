@@ -1,11 +1,42 @@
 // TOM Analytics Dashboard - Clean Working Version
 class TOMDashboard {
-    constructor(tableId = 'tableBody', podiumId = 'podium', storageKey = 'tom_analytics_data') {
-        this.tableId = tableId;
-        this.podiumId = podiumId;
-        this.storageKey = storageKey;
+    constructor(tableConfigOrId = 'tableBody', podiumId = 'podium', storageKey = 'tom_analytics_data') {
+        // Support both new tableConfig object and legacy parameters for backward compatibility
+        if (typeof tableConfigOrId === 'object' && tableConfigOrId !== null) {
+            // New: Accept tableConfig object
+            const tableConfig = tableConfigOrId;
+            this.tableId = tableConfig.tableBodyId;
+            this.podiumId = podiumId; // Keep podiumId separate for now
+            this.tableName = tableConfig.tableName;
+            this.storageKey = tableConfig.storageKey;
+            this.direction = tableConfig.direction;
+            this.defaultBenchmark = tableConfig.defaultBenchmark;
+            this.columns = tableConfig.columns || this.getDefaultColumns();
+            this.tableConfig = tableConfig; // Store full config for reference
+        } else {
+            // Legacy: Accept individual parameters
+            this.tableId = tableConfigOrId;
+            this.podiumId = podiumId;
+            this.storageKey = storageKey;
+            this.tableName = null;
+            this.direction = null;
+            this.defaultBenchmark = null;
+            this.columns = this.getDefaultColumns();
+            this.tableConfig = null;
+        }
         this.data = [];
         this.init();
+    }
+
+    // Get default columns for backward compatibility
+    getDefaultColumns() {
+        return [
+            { id: 'name', label: 'Name', dataType: 'text', visible: true, sortable: true, editable: false },
+            { id: 'priorMonth', label: 'Prior Month', dataType: 'number', visible: true, sortable: true, editable: false },
+            { id: 'currentMonth', label: 'Current Month', dataType: 'number', visible: true, sortable: true, editable: false },
+            { id: 'change', label: 'Change', dataType: 'number', visible: true, sortable: true, editable: false },
+            { id: 'status', label: 'Status', dataType: 'status', visible: true, sortable: true, editable: false }
+        ];
     }
 
     init() {
@@ -155,13 +186,36 @@ class TOMDashboard {
                 if (file.name.endsWith('.json')) {
                     this.handleJSONUpload(file);
                 } else {
-                    const targetTable = this.determineTargetTable(file.name);
-                    
-                    if (targetTable && dashboards[targetTable]) {
-                        dashboards[targetTable].handleFileUpload([file]);
+                    // Use FileRoutingEngine if available, otherwise fall back to legacy routing
+                    if (window.fileRoutingEngine && window.configSystem) {
+                        try {
+                            const targetTableId = window.fileRoutingEngine.routeFile(file);
+                            const targetConfig = window.configSystem.getTableConfig(targetTableId);
+                            
+                            if (targetConfig && window.dashboards[targetConfig.tableBodyId]) {
+                                window.dashboards[targetConfig.tableBodyId].handleFileUpload([file]);
+                            } else {
+                                console.warn(`Target dashboard not found for ${targetTableId}, using default`);
+                                window.dashboards['tableBody'].handleFileUpload([file]);
+                            }
+                        } catch (error) {
+                            console.error('File routing error:', error);
+                            // Fall back to legacy routing
+                            const targetTable = this.determineTargetTable(file.name);
+                            if (targetTable && dashboards[targetTable]) {
+                                dashboards[targetTable].handleFileUpload([file]);
+                            } else {
+                                dashboards['tableBody'].handleFileUpload([file]);
+                            }
+                        }
                     } else {
-                        // Default to VTI Compliance table if no specific mapping found
-                        dashboards['tableBody'].handleFileUpload([file]);
+                        // Legacy routing (backward compatibility)
+                        const targetTable = this.determineTargetTable(file.name);
+                        if (targetTable && dashboards[targetTable]) {
+                            dashboards[targetTable].handleFileUpload([file]);
+                        } else {
+                            dashboards['tableBody'].handleFileUpload([file]);
+                        }
                     }
                 }
             } else {
@@ -424,102 +478,145 @@ class TOMDashboard {
         // Convert CSV lines to array format if needed
         const rows = Array.isArray(data[0]) ? data : data.map(line => line.split(','));
         
-
+        // Check if using custom columns with file column mapping
+        const hasCustomMapping = this.columns && this.columns.length > 0 && 
+                                  this.columns.some(col => col.fileColumnMapping);
         
-        // Skip header row
-        for (let i = 1; i < rows.length; i++) {
-            const row = rows[i];
-            let userName = null;
-            let value = null;
-
-
-
-            // Determine column mappings based on file type
-            if (name.includes('ta-idle-time')) {
-                // TA Idle Time: Column B (Driver), Column E (Idle Time)
-                userName = this.cleanValue(row[1]); // Column B
-                const rawValue = this.cleanValue(row[4]); // Column E
-                value = parseFloat(rawValue);
-            } else if (name.includes('seal-validation')) {
-                // Seal Validation: Search for actual usernames in the row
-                userName = null;
-                for (let col = 0; col < row.length; col++) {
-                    const cellValue = this.cleanValue(row[col]);
-                    if (cellValue && /^[a-z]{6,12}$/.test(cellValue) && 
-                        (cellValue === 'smleean' || cellValue === 'antoiche' || 
-                         cellValue === 'shiechre' || cellValue === 'jahaynev' || 
-                         cellValue === 'messiety' || cellValue === 'johnmowe' ||
-                         cellValue === 'raymogrl' || cellValue === 'morriyas' ||
-                         cellValue === 'jennimfr' || /^[a-z]{6,12}$/.test(cellValue))) {
-                        userName = cellValue;
-                        break;
+        if (hasCustomMapping) {
+            // Custom column mapping: parse based on column schema
+            // Skip header row
+            for (let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                const rowData = {};
+                
+                this.columns.forEach(column => {
+                    if (column.fileColumnMapping) {
+                        // Convert Excel column letter to index (A=0, B=1, etc.)
+                        const colIndex = this.excelColumnToIndex(column.fileColumnMapping);
+                        const rawValue = this.cleanValue(row[colIndex]);
+                        
+                        // Parse value based on data type
+                        if (column.dataType === 'number' || column.dataType === 'percentage') {
+                            rowData[column.id] = parseFloat(rawValue) || 0;
+                        } else if (column.dataType === 'date') {
+                            rowData[column.id] = rawValue; // Store as string, format on display
+                        } else {
+                            rowData[column.id] = rawValue || '';
+                        }
                     }
-                }
-                
-                // Get accuracy value from Column AG (Andon Input Inaccuracy %)
-                const rawValue = this.cleanValue(row[32]); // Column AG - index 32
-                value = parseFloat(rawValue);
-                
-                // Convert accuracy values: 0 = 100%, 0.9333 = 93.33%
-                if (!isNaN(value)) {
-                    if (value === 0) {
-                        value = 100.00;
-                    } else if (value > 0 && value <= 1) {
-                        value = value * 100;
-                    }
-                } else {
-                    value = 100.00; // Default if no valid value
-                }
-                
-            } else if (name.includes('andon-response-time')) {
-                // Andon Response Time: Column T (executing_user), Column AE (andon_response_time)
-                userName = this.cleanValue(row[19]); // Column T (20th column, 0-indexed = 19)
-                const rawValue = this.cleanValue(row[30]); // Column AE (31st column, 0-indexed = 30)
-                value = parseFloat(rawValue);
-            } else if (name.includes('ppo-compliance')) {
-                // PPO Compliance: Column A (Associate Name), Column B (Prior/Current Month)
-                userName = this.cleanValue(row[0]); // Column A
-                const rawValue = this.cleanValue(row[1]); // Column B
-                value = parseFloat(rawValue);
-                // Store raw violation count (0 = no violations, higher = more violations)
-                // If value is between 0 and 1 (like 0.9333), treat it as a decimal count, not percentage
-                // Keep as-is: 0 = 0 violations, 1 = 1 violation, 0.5 = 0.5 violations
-            } else if (name.includes('vti-dpmo')) {
-                // VTI DPMO: Column A (Associate Name), Column B (Prior/Current Month)
-                userName = this.cleanValue(row[0]); // Column A
-                const rawValue = this.cleanValue(row[1]); // Column B
-                value = parseFloat(rawValue);
-                // Store raw violation count (0 = no violations, higher = more violations)
-                // If value is between 0 and 1 (like 0.9333), treat it as a decimal count, not percentage
-                // Keep as-is: 0 = 0 violations, 1 = 1 violation, 0.5 = 0.5 violations
-            } else {
-                // VTI Compliance table: Prior Month % pulls from file name prior-vti with header name Relay VTI % (100% Capped)
-                // VTI Compliance table: Current Month % pulls from file name current-vti with header name Relay VTI % (100% Capped)
-                // Both prior-vti and current-vti pull from Column letter I
-                userName = this.cleanValue(row[4]); // Column E → user_id → Associate Name column
-                const rawValue = this.cleanValue(row[8]); // Column I → Relay VTI % (100% Capped)
-                value = parseFloat(rawValue);
-                // Convert decimal to percentage if value is between 0 and 1
-                if (!isNaN(value) && value > 0 && value <= 1) {
-                    value = value * 100; // Convert 0.9333 to 93.33%
-                }
-            }
-
-            if (userName && userName.trim() !== '' && value !== null && !isNaN(value) && value >= 0) {
-                newData.push({
-                    name: userName.trim(),
-                    priorMonth: isPrior ? value : 0,
-                    currentMonth: isCurrent ? value : 0
                 });
+                
+                // Only add row if it has valid data
+                if (Object.keys(rowData).length > 0) {
+                    newData.push(rowData);
+                }
             }
-        }
+            
+            return newData;
+        } else {
+            // Default parsing logic (backward compatibility)
+            // Skip header row
+            for (let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                let userName = null;
+                let value = null;
 
-        // For files that need averaging (VTI Compliance, TA Idle Time, Seal Validation, Andon Response Time)
-        if (name.includes('vti') && !name.includes('dpmo') || name.includes('ta-idle-time') || name.includes('seal-validation') || name.includes('andon-response-time')) {
-            return this.averageDataByUser(newData, isPrior, isCurrent);
-        }
+                // Determine column mappings based on file type
+                if (name.includes('ta-idle-time')) {
+                    // TA Idle Time: Column B (Driver), Column E (Idle Time)
+                    userName = this.cleanValue(row[1]); // Column B
+                    const rawValue = this.cleanValue(row[4]); // Column E
+                    value = parseFloat(rawValue);
+                } else if (name.includes('seal-validation')) {
+                    // Seal Validation: Search for actual usernames in the row
+                    userName = null;
+                    for (let col = 0; col < row.length; col++) {
+                        const cellValue = this.cleanValue(row[col]);
+                        if (cellValue && /^[a-z]{6,12}$/.test(cellValue) && 
+                            (cellValue === 'smleean' || cellValue === 'antoiche' || 
+                             cellValue === 'shiechre' || cellValue === 'jahaynev' || 
+                             cellValue === 'messiety' || cellValue === 'johnmowe' ||
+                             cellValue === 'raymogrl' || cellValue === 'morriyas' ||
+                             cellValue === 'jennimfr' || /^[a-z]{6,12}$/.test(cellValue))) {
+                            userName = cellValue;
+                            break;
+                        }
+                    }
+                    
+                    // Get accuracy value from Column AG (Andon Input Inaccuracy %)
+                    const rawValue = this.cleanValue(row[32]); // Column AG - index 32
+                    value = parseFloat(rawValue);
+                    
+                    // Convert accuracy values: 0 = 100%, 0.9333 = 93.33%
+                    if (!isNaN(value)) {
+                        if (value === 0) {
+                            value = 100.00;
+                        } else if (value > 0 && value <= 1) {
+                            value = value * 100;
+                        }
+                    } else {
+                        value = 100.00; // Default if no valid value
+                    }
+                    
+                } else if (name.includes('andon-response-time')) {
+                    // Andon Response Time: Column T (executing_user), Column AE (andon_response_time)
+                    userName = this.cleanValue(row[19]); // Column T (20th column, 0-indexed = 19)
+                    const rawValue = this.cleanValue(row[30]); // Column AE (31st column, 0-indexed = 30)
+                    value = parseFloat(rawValue);
+                } else if (name.includes('ppo-compliance')) {
+                    // PPO Compliance: Column A (Associate Name), Column B (Prior/Current Month)
+                    userName = this.cleanValue(row[0]); // Column A
+                    const rawValue = this.cleanValue(row[1]); // Column B
+                    value = parseFloat(rawValue);
+                    // Store raw violation count (0 = no violations, higher = more violations)
+                    // If value is between 0 and 1 (like 0.9333), treat it as a decimal count, not percentage
+                    // Keep as-is: 0 = 0 violations, 1 = 1 violation, 0.5 = 0.5 violations
+                } else if (name.includes('vti-dpmo')) {
+                    // VTI DPMO: Column A (Associate Name), Column B (Prior/Current Month)
+                    userName = this.cleanValue(row[0]); // Column A
+                    const rawValue = this.cleanValue(row[1]); // Column B
+                    value = parseFloat(rawValue);
+                    // Store raw violation count (0 = no violations, higher = more violations)
+                    // If value is between 0 and 1 (like 0.9333), treat it as a decimal count, not percentage
+                    // Keep as-is: 0 = 0 violations, 1 = 1 violation, 0.5 = 0.5 violations
+                } else {
+                    // VTI Compliance table: Prior Month % pulls from file name prior-vti with header name Relay VTI % (100% Capped)
+                    // VTI Compliance table: Current Month % pulls from file name current-vti with header name Relay VTI % (100% Capped)
+                    // Both prior-vti and current-vti pull from Column letter I
+                    userName = this.cleanValue(row[4]); // Column E → user_id → Associate Name column
+                    const rawValue = this.cleanValue(row[8]); // Column I → Relay VTI % (100% Capped)
+                    value = parseFloat(rawValue);
+                    // Convert decimal to percentage if value is between 0 and 1
+                    if (!isNaN(value) && value > 0 && value <= 1) {
+                        value = value * 100; // Convert 0.9333 to 93.33%
+                    }
+                }
 
-        return newData;
+                if (userName && userName.trim() !== '' && value !== null && !isNaN(value) && value >= 0) {
+                    newData.push({
+                        name: userName.trim(),
+                        priorMonth: isPrior ? value : 0,
+                        currentMonth: isCurrent ? value : 0
+                    });
+                }
+            }
+
+            // For files that need averaging (VTI Compliance, TA Idle Time, Seal Validation, Andon Response Time)
+            if (name.includes('vti') && !name.includes('dpmo') || name.includes('ta-idle-time') || name.includes('seal-validation') || name.includes('andon-response-time')) {
+                return this.averageDataByUser(newData, isPrior, isCurrent);
+            }
+
+            return newData;
+        }
+    }
+
+    // Convert Excel column letter to array index (A=0, B=1, AA=26, etc.)
+    excelColumnToIndex(column) {
+        let index = 0;
+        for (let i = 0; i < column.length; i++) {
+            index = index * 26 + (column.charCodeAt(i) - 'A'.charCodeAt(0) + 1);
+        }
+        return index - 1; // Convert to 0-based index
     }
 
     cleanValue(value) {
@@ -833,11 +930,6 @@ class TOMDashboard {
         if (!tableBody) return;
         tableBody.innerHTML = '';
         
-        const isAndonTable = this.tableId === 'tableBody6';
-        const isVTIDPMOTable = this.tableId === 'tableBody2';
-        const isTAIdleTable = this.tableId === 'tableBody3';
-        const isPPOTable = this.tableId === 'tableBody5';
-        
         // Filter out excluded employees
         const employees = window.simpleEmployees || [];
         const filteredData = this.data.filter(row => {
@@ -851,60 +943,116 @@ class TOMDashboard {
         });
         
         filteredData.forEach((row, index) => {
-            const tr = document.createElement('tr');
-            tr.className = 'table-row';
-            tr.draggable = true;
+            const tr = this.createRow(row, index);
+            tableBody.appendChild(tr);
+        });
+    }
+
+    // Create row based on column schema
+    createRow(item, index) {
+        const tr = document.createElement('tr');
+        tr.className = 'table-row';
+        tr.draggable = true;
+        
+        // Check if using custom columns or default columns
+        const hasCustomColumns = this.columns && this.columns.length > 0 && 
+                                  this.columns[0].id !== 'name'; // Not default columns
+        
+        if (hasCustomColumns) {
+            // Custom columns: render dynamically based on column schema
+            // Rank column (always first)
+            const rankCell = document.createElement('td');
+            rankCell.textContent = index + 1;
+            tr.appendChild(rankCell);
+            
+            // Dynamic columns
+            this.columns.forEach(column => {
+                if (column.visible !== false) {
+                    const cell = document.createElement('td');
+                    const value = item[column.id];
+                    cell.textContent = this.formatCellValue(value, column.dataType);
+                    
+                    // Apply special styling for change columns
+                    if (column.id === 'change' && this.direction) {
+                        const changeClass = this.getChangeClass(item.change, this.direction);
+                        cell.className = changeClass;
+                    }
+                    
+                    // Apply status styling
+                    if (column.dataType === 'status' && value) {
+                        const statusClass = `status-${value.toLowerCase()}`;
+                        cell.innerHTML = `<span class="${statusClass}">${value}</span>`;
+                    }
+                    
+                    if (column.editable) {
+                        cell.contentEditable = true;
+                    }
+                    tr.appendChild(cell);
+                }
+            });
+            
+            // Actions column (always last)
+            const actionsCell = document.createElement('td');
+            actionsCell.innerHTML = `<button class="btn-delete" onclick="dashboards['${this.tableId}'].deleteRow(${index})">🗑️</button>`;
+            tr.appendChild(actionsCell);
+            
+        } else {
+            // Default columns: use legacy rendering logic for backward compatibility
+            const isAndonTable = this.tableId === 'tableBody6';
+            const isVTIDPMOTable = this.tableId === 'tableBody2';
+            const isTAIdleTable = this.tableId === 'tableBody3';
+            const isPPOTable = this.tableId === 'tableBody5';
             
             // Get full name immediately
-            const displayName = this.getFullName(row.name);
+            const displayName = this.getFullName(item.name);
             
             // Color logic based on metric direction
             let changeClass;
             if (isTAIdleTable || isVTIDPMOTable || isPPOTable || isAndonTable) {
                 // Lower is better: negative change = improvement (green), positive = decline (red)
-                changeClass = row.change < 0 ? 'positive' : row.change > 0 ? 'negative' : 'neutral';
+                changeClass = item.change < 0 ? 'positive' : item.change > 0 ? 'negative' : 'neutral';
             } else {
                 // Higher is better: positive change = improvement (green), negative = decline (red)
-                changeClass = row.change > 0 ? 'positive' : row.change < 0 ? 'negative' : 'neutral';
+                changeClass = item.change > 0 ? 'positive' : item.change < 0 ? 'negative' : 'neutral';
             }
             
-            const statusClass = row.status ? `status-${row.status.toLowerCase()}` : '';
+            const statusClass = item.status ? `status-${item.status.toLowerCase()}` : '';
             
             if (isAndonTable) {
                 // Andon Response Time: lower is better, so flip display for clarity
-                const displayChange = -row.change; // Flip the sign for display
+                const displayChange = -item.change; // Flip the sign for display
                 tr.innerHTML = `
                     <td>${index + 1}</td>
                     <td>${displayName}</td>
-                    <td>${row.priorMonth.toFixed(2)}</td>
-                    <td>${row.currentMonth.toFixed(2)}</td>
+                    <td>${item.priorMonth.toFixed(2)}</td>
+                    <td>${item.currentMonth.toFixed(2)}</td>
                     <td class="${changeClass}">${displayChange > 0 ? '+' : ''}${displayChange.toFixed(2)}</td>
-                    <td>${row.status ? `<span class="${statusClass}">${row.status}</span>` : ''}</td>
+                    <td>${item.status ? `<span class="${statusClass}">${item.status}</span>` : ''}</td>
                     <td><button class="btn-delete" onclick="dashboards['${this.tableId}'].deleteRow(${index})">🗑️</button></td>
                 `;
             } else if (isVTIDPMOTable || isPPOTable) {
                 // VTI DPMO and PPO: lower is better, so flip display for clarity
-                const displayChange = -row.change; // Flip the sign for display
+                const displayChange = -item.change; // Flip the sign for display
                 tr.innerHTML = `
                     <td>${index + 1}</td>
                     <td>${displayName}</td>
-                    <td>${Math.round(row.priorMonth)}</td>
-                    <td>${Math.round(row.currentMonth)}</td>
+                    <td>${Math.round(item.priorMonth)}</td>
+                    <td>${Math.round(item.currentMonth)}</td>
                     <td class="${changeClass}">${displayChange > 0 ? '+' : ''}${displayChange.toFixed(2)}</td>
-                    <td>${row.status ? `<span class="${statusClass}">${row.status}</span>` : ''}</td>
+                    <td>${item.status ? `<span class="${statusClass}">${item.status}</span>` : ''}</td>
                     <td><button class="btn-delete" onclick="dashboards['${this.tableId}'].deleteRow(${index})">🗑️</button></td>
                 `;
             } else if (isTAIdleTable) {
                 // TA Idle Time table with status column
                 // For TA Idle Time: negative change = improvement, so flip the sign for display
-                const displayChange = -row.change; // Flip the sign
+                const displayChange = -item.change; // Flip the sign
                 tr.innerHTML = `
                     <td>${index + 1}</td>
                     <td>${displayName}</td>
-                    <td>${row.priorMonth.toFixed(2)}</td>
-                    <td>${row.currentMonth.toFixed(2)}</td>
+                    <td>${item.priorMonth.toFixed(2)}</td>
+                    <td>${item.currentMonth.toFixed(2)}</td>
                     <td class="${changeClass}">${displayChange > 0 ? '+' : ''}${displayChange.toFixed(2)}</td>
-                    <td>${row.status ? `<span class="${statusClass}">${row.status}</span>` : ''}</td>
+                    <td>${item.status ? `<span class="${statusClass}">${item.status}</span>` : ''}</td>
                     <td><button class="btn-delete" onclick="dashboards['${this.tableId}'].deleteRow(${index})">🗑️</button></td>
                 `;
             } else {
@@ -912,15 +1060,47 @@ class TOMDashboard {
                 tr.innerHTML = `
                     <td>${index + 1}</td>
                     <td>${displayName}</td>
-                    <td>${row.priorMonth.toFixed(2)}%</td>
-                    <td>${row.currentMonth.toFixed(2)}%</td>
-                    <td class="${changeClass}">${row.change > 0 ? '+' : ''}${row.change.toFixed(2)}%</td>
-                    <td>${row.status ? `<span class="${statusClass}">${row.status}</span>` : ''}</td>
+                    <td>${item.priorMonth.toFixed(2)}%</td>
+                    <td>${item.currentMonth.toFixed(2)}%</td>
+                    <td class="${changeClass}">${item.change > 0 ? '+' : ''}${item.change.toFixed(2)}%</td>
+                    <td>${item.status ? `<span class="${statusClass}">${item.status}</span>` : ''}</td>
                     <td><button class="btn-delete" onclick="dashboards['${this.tableId}'].deleteRow(${index})">🗑️</button></td>
                 `;
             }
-            tableBody.appendChild(tr);
-        });
+        }
+        
+        return tr;
+    }
+
+    // Format cell value based on data type
+    formatCellValue(value, dataType) {
+        if (value === null || value === undefined) return '';
+        
+        switch (dataType) {
+            case 'percentage':
+                return `${typeof value === 'number' ? value.toFixed(2) : value}%`;
+            case 'number':
+                return typeof value === 'number' ? value.toFixed(2) : value;
+            case 'date':
+                return value instanceof Date ? value.toLocaleDateString() : 
+                       (typeof value === 'string' ? new Date(value).toLocaleDateString() : value);
+            case 'status':
+                return value; // Status gets special HTML treatment in createRow
+            case 'text':
+            default:
+                return value;
+        }
+    }
+
+    // Get change class based on direction
+    getChangeClass(change, direction) {
+        if (direction === 'lower') {
+            // Lower is better: negative change = improvement (green), positive = decline (red)
+            return change < 0 ? 'positive' : change > 0 ? 'negative' : 'neutral';
+        } else {
+            // Higher is better: positive change = improvement (green), negative = decline (red)
+            return change > 0 ? 'positive' : change < 0 ? 'negative' : 'neutral';
+        }
     }
 
     updatePodium() {
@@ -1171,34 +1351,88 @@ class TOMDashboard {
 let dashboard, dashboard2, dashboard3, dashboard4, dashboard5, dashboard6;
 let dashboards = {};
 
-document.addEventListener('DOMContentLoaded', () => {
-    dashboard = new TOMDashboard('tableBody', 'podium1', 'tom_analytics_data');
-    dashboard2 = new TOMDashboard('tableBody2', 'podium2', 'tom_analytics_data_2');
-    dashboard3 = new TOMDashboard('tableBody3', 'podium3', 'tom_analytics_data_3');
-    dashboard4 = new TOMDashboard('tableBody4', 'podium4', 'tom_analytics_data_4');
-    dashboard5 = new TOMDashboard('tableBody5', 'podium5', 'tom_analytics_data_5');
-    dashboard6 = new TOMDashboard('tableBody6', 'podium6', 'tom_analytics_data_6');
-    
-    dashboards = {
-        'tableBody': dashboard, 'tableBody2': dashboard2, 'tableBody3': dashboard3,
-        'tableBody4': dashboard4, 'tableBody5': dashboard5, 'tableBody6': dashboard6
-    };
-    
-    // Make dashboards globally accessible
-    window.dashboards = dashboards;
-    
-    const restoreInput = document.getElementById('restoreInput');
-    if (restoreInput) {
-        restoreInput.addEventListener('change', (e) => {
-            if (e.target.files && e.target.files[0]) {
-                processRestoreFile(e.target.files[0]);
-                e.target.value = '';
+// Global instances for configuration-driven system
+let configSystem;
+let fileRoutingEngine;
+let tableGenerator;
+let dashboardManager;
+
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        console.log('🚀 Initializing TOM Analytics Dashboard with configuration system...');
+        
+        // Initialize TableConfigSystem and load configuration
+        configSystem = new TableConfigSystem('demo/assets/table-config.json');
+        await configSystem.loadConfig();
+        console.log('✅ Configuration loaded successfully');
+        
+        // Initialize FileRoutingEngine with config system
+        fileRoutingEngine = new FileRoutingEngine(configSystem);
+        console.log('✅ File routing engine initialized');
+        
+        // Initialize DynamicTableGenerator with config system
+        tableGenerator = new DynamicTableGenerator(configSystem);
+        console.log('✅ Dynamic table generator initialized');
+        
+        // Generate all tables from configuration
+        tableGenerator.generateAllTables();
+        console.log('✅ Tables generated from configuration');
+        
+        // Initialize DashboardManager with config system and table generator
+        dashboardManager = new DashboardManager(configSystem, tableGenerator);
+        await dashboardManager.initializeDashboards();
+        console.log('✅ Dashboard instances created');
+        
+        // Get all dashboard instances from manager
+        dashboards = dashboardManager.getAllDashboards();
+        
+        // Create legacy references for backward compatibility
+        const dashboardsByBodyId = {};
+        Object.keys(dashboards).forEach(tableId => {
+            const config = configSystem.getTableConfig(tableId);
+            if (config) {
+                dashboardsByBodyId[config.tableBodyId] = dashboards[tableId];
             }
         });
+        
+        // Set legacy variables for backward compatibility
+        dashboard = dashboardsByBodyId['tableBody'];
+        dashboard2 = dashboardsByBodyId['tableBody2'];
+        dashboard3 = dashboardsByBodyId['tableBody3'];
+        dashboard4 = dashboardsByBodyId['tableBody4'];
+        dashboard5 = dashboardsByBodyId['tableBody5'];
+        dashboard6 = dashboardsByBodyId['tableBody6'];
+        
+        // Make dashboards globally accessible (by tableBodyId for backward compatibility)
+        window.dashboards = dashboardsByBodyId;
+        
+        // Also expose the manager and config system globally
+        window.dashboardManager = dashboardManager;
+        window.configSystem = configSystem;
+        window.fileRoutingEngine = fileRoutingEngine;
+        window.tableGenerator = tableGenerator;
+        
+        console.log('✅ All components initialized successfully');
+        console.log(`📊 ${Object.keys(dashboards).length} dashboards ready`);
+        
+        // Setup restore backup input listener
+        const restoreInput = document.getElementById('restoreInput');
+        if (restoreInput) {
+            restoreInput.addEventListener('change', (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    processRestoreFile(e.target.files[0]);
+                    e.target.value = '';
+                }
+            });
+        }
+        
+        // Auto-load JSON data files if they exist (disabled - use drag and drop instead)
+        // autoLoadJSONData();
+        
+    } catch (error) {
+        console.error('❌ Failed to initialize dashboard system:', error);
+        alert('Failed to initialize dashboard system. Please refresh the page.');
     }
-    
-    // Auto-load JSON data files if they exist (disabled - use drag and drop instead)
-    // autoLoadJSONData();
 });
 
 // Global functions for HTML onclick handlers
@@ -1757,8 +1991,21 @@ function updateLeaderboard() {
         return employee && employee.excludeFromTables;
     }
     
-    // Collect data from all 6 tables using Improvement-First Ranking
-    Object.values(dashboards).forEach(dashboard => {
+    // Get dashboards to include in leaderboard
+    let dashboardsToInclude;
+    
+    if (window.dashboardManager && window.configSystem) {
+        // Use configuration system to get only visible tables with includeInLeaderboard=true
+        dashboardsToInclude = window.dashboardManager.getLeaderboardDashboards();
+        console.log(`📊 Leaderboard: Including ${Object.keys(dashboardsToInclude).length} tables based on configuration`);
+    } else {
+        // Fall back to all dashboards (legacy behavior)
+        dashboardsToInclude = dashboards;
+        console.log('📊 Leaderboard: Using all dashboards (legacy mode)');
+    }
+    
+    // Collect data from included tables using Improvement-First Ranking
+    Object.values(dashboardsToInclude).forEach(dashboard => {
         if (dashboard && dashboard.data) {
             dashboard.data.forEach(employee => {
                 // Skip excluded employees

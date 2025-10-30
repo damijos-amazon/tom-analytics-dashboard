@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integration Test - TOM Analytics Dashboard</title>
+    <style>
+        body {
+            font-family: 'Amazon Ember', Arial, sans-serif;
+            background: linear-gradient(135deg, #232F3E 0%, #131A22 100%);
+            color: white;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 10px;
+        }
+        h1 {
+            color: #FF9900;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #FF9900;
+        }
+        .test-section h2 {
+            color: #FFD700;
+            margin-top: 0;
+        }
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status.success {
+            background: #067D62;
+            color: white;
+        }
+        .status.error {
+            background: #D13212;
+            color: white;
+        }
+        .status.pending {
+            background: #FF9900;
+            color: white;
+        }
+        .test-result {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            margin-top: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        button {
+            background: #FF9900;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-right: 10px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #FFB84D;
+        }
+        .info {
+            color: #FFD700;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Integration Test - Configuration System</h1>
+        
+        <div class="test-section">
+            <h2>Test 1: Component Initialization <span id="test1-status" class="status pending">PENDING</span></h2>
+            <p class="info">Verifies that all configuration-driven components are initialized correctly.</p>
+            <button onclick="runTest1()">Run Test</button>
+            <div id="test1-result" class="test-result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>Test 2: Configuration Loading <span id="test2-status" class="status pending">PENDING</span></h2>
+            <p class="info">Checks if table configuration is loaded from JSON file.</p>
+            <button onclick="runTest2()">Run Test</button>
+            <div id="test2-result" class="test-result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>Test 3: File Routing Engine <span id="test3-status" class="status pending">PENDING</span></h2>
+            <p class="info">Tests file routing based on filename patterns.</p>
+            <button onclick="runTest3()">Run Test</button>
+            <div id="test3-result" class="test-result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>Test 4: Dashboard Manager <span id="test4-status" class="status pending">PENDING</span></h2>
+            <p class="info">Verifies dashboard instances are created and managed correctly.</p>
+            <button onclick="runTest4()">Run Test</button>
+            <div id="test4-result" class="test-result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>Test 5: Leaderboard Filtering <span id="test5-status" class="status pending">PENDING</span></h2>
+            <p class="info">Tests leaderboard filtering by visibility and includeInLeaderboard flags.</p>
+            <button onclick="runTest5()">Run Test</button>
+            <div id="test5-result" class="test-result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>Test 6: Backward Compatibility <span id="test6-status" class="status pending">PENDING</span></h2>
+            <p class="info">Ensures legacy code still works with new system.</p>
+            <button onclick="runTest6()">Run Test</button>
+            <div id="test6-result" class="test-result" style="display: none;"></div>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <button onclick="runAllTests()" style="background: #067D62; font-size: 16px; padding: 15px 30px;">▶️ Run All Tests</button>
+        </div>
+    </div>
+
+    <!-- Load required libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- Load configuration system components -->
+    <script src="js/table-config-system.js"></script>
+    <script src="js/file-routing-engine.js"></script>
+    <script src="js/dynamic-table-generator.js"></script>
+    <script src="js/dashboard-manager.js"></script>
+    <script src="js/script-clean.js"></script>
+
+    <script>
+        function setStatus(testId, status, message) {
+            const statusEl = document.getElementById(`test${testId}-status`);
+            const resultEl = document.getElementById(`test${testId}-result`);
+            
+            statusEl.className = `status ${status}`;
+            statusEl.textContent = status === 'success' ? '✅ PASSED' : status === 'error' ? '❌ FAILED' : '⏳ RUNNING';
+            
+            resultEl.style.display = 'block';
+            resultEl.textContent = message;
+        }
+
+        async function runTest1() {
+            setStatus(1, 'pending', 'Testing component initialization...');
+            
+            try {
+                let results = [];
+                
+                // Check if components are defined
+                results.push(`✓ TableConfigSystem: ${typeof TableConfigSystem !== 'undefined' ? 'DEFINED' : 'UNDEFINED'}`);
+                results.push(`✓ FileRoutingEngine: ${typeof FileRoutingEngine !== 'undefined' ? 'DEFINED' : 'UNDEFINED'}`);
+                results.push(`✓ DynamicTableGenerator: ${typeof DynamicTableGenerator !== 'undefined' ? 'DEFINED' : 'UNDEFINED'}`);
+                results.push(`✓ DashboardManager: ${typeof DashboardManager !== 'undefined' ? 'DEFINED' : 'UNDEFINED'}`);
+                
+                // Check if global instances exist
+                results.push(`\n✓ window.configSystem: ${window.configSystem ? 'EXISTS' : 'NOT FOUND'}`);
+                results.push(`✓ window.fileRoutingEngine: ${window.fileRoutingEngine ? 'EXISTS' : 'NOT FOUND'}`);
+                results.push(`✓ window.tableGenerator: ${window.tableGenerator ? 'EXISTS' : 'NOT FOUND'}`);
+                results.push(`✓ window.dashboardManager: ${window.dashboardManager ? 'EXISTS' : 'NOT FOUND'}`);
+                
+                const allPassed = results.every(r => !r.includes('UNDEFINED') && !r.includes('NOT FOUND'));
+                setStatus(1, allPassed ? 'success' : 'error', results.join('\n'));
+            } catch (error) {
+                setStatus(1, 'error', `Error: ${error.message}\n${error.stack}`);
+            }
+        }
+
+        async function runTest2() {
+            setStatus(2, 'pending', 'Testing configuration loading...');
+            
+            try {
+                if (!window.configSystem) {
+                    throw new Error('ConfigSystem not initialized');
+                }
+                
+                let results = [];
+                const config = window.configSystem.config;
+                
+                results.push(`✓ Configuration loaded: ${config ? 'YES' : 'NO'}`);
+                results.push(`✓ Version: ${config?.version || 'N/A'}`);
+                results.push(`✓ Default table: ${config?.defaultTable || 'N/A'}`);
+                results.push(`✓ Number of tables: ${config?.tables?.length || 0}`);
+                
+                if (config?.tables) {
+                    results.push('\nTable configurations:');
+                    config.tables.forEach((table, index) => {
+                        results.push(`  ${index + 1}. ${table.tableName} (${table.tableId})`);
+                        results.push(`     - Visible: ${table.visible}`);
+                        results.push(`     - Include in leaderboard: ${table.includeInLeaderboard}`);
+                        results.push(`     - File patterns: ${table.filePatterns?.length || 0}`);
+                    });
+                }
+                
+                setStatus(2, config ? 'success' : 'error', results.join('\n'));
+            } catch (error) {
+                setStatus(2, 'error', `Error: ${error.message}\n${error.stack}`);
+            }
+        }
+
+        async function runTest3() {
+            setStatus(3, 'pending', 'Testing file routing engine...');
+            
+            try {
+                if (!window.fileRoutingEngine) {
+                    throw new Error('FileRoutingEngine not initialized');
+                }
+                
+                let results = [];
+                
+                // Test various file patterns
+                const testFiles = [
+                    { name: 'prior-vti.xlsx', expected: 'vti-compliance' },
+                    { name: 'current-vti-dpmo.csv', expected: 'vti-dpmo' },
+                    { name: 'ta-idle-time.xlsx', expected: 'ta-idle-time' },
+                    { name: 'seal-validation.csv', expected: 'seal-validation' },
+                    { name: 'ppo-compliance.xlsx', expected: 'ppo-compliance' },
+                    { name: 'andon-response-time.csv', expected: 'andon-response-time' }
+                ];
+                
+                results.push('File routing tests:');
+                testFiles.forEach(test => {
+                    try {
+                        const targetTableId = window.fileRoutingEngine.routeFile({ name: test.name });
+                        const match = targetTableId === test.expected;
+                        results.push(`  ${match ? '✓' : '✗'} ${test.name} → ${targetTableId} ${match ? '' : `(expected: ${test.expected})`}`);
+                    } catch (error) {
+                        results.push(`  ✗ ${test.name} → ERROR: ${error.message}`);
+                    }
+                });
+                
+                const allPassed = results.every(r => !r.includes('✗'));
+                setStatus(3, allPassed ? 'success' : 'error', results.join('\n'));
+            } catch (error) {
+                setStatus(3, 'error', `Error: ${error.message}\n${error.stack}`);
+            }
+        }
+
+        async function runTest4() {
+            setStatus(4, 'pending', 'Testing dashboard manager...');
+            
+            try {
+                if (!window.dashboardManager) {
+                    throw new Error('DashboardManager not initialized');
+                }
+                
+                let results = [];
+                
+                const allDashboards = window.dashboardManager.getAllDashboards();
+                const visibleDashboards = window.dashboardManager.getVisibleDashboards();
+                const leaderboardDashboards = window.dashboardManager.getLeaderboardDashboards();
+                
+                results.push(`✓ Total dashboards: ${Object.keys(allDashboards).length}`);
+                results.push(`✓ Visible dashboards: ${Object.keys(visibleDashboards).length}`);
+                results.push(`✓ Leaderboard dashboards: ${Object.keys(leaderboardDashboards).length}`);
+                
+                results.push('\nDashboard details:');
+                Object.keys(allDashboards).forEach(tableId => {
+                    const dashboard = allDashboards[tableId];
+                    const config = window.configSystem.getTableConfig(tableId);
+                    results.push(`  • ${config?.tableName || tableId}`);
+                    results.push(`    - Table ID: ${tableId}`);
+                    results.push(`    - Storage key: ${dashboard.storageKey}`);
+                    results.push(`    - Data rows: ${dashboard.data?.length || 0}`);
+                });
+                
+                setStatus(4, 'success', results.join('\n'));
+            } catch (error) {
+                setStatus(4, 'error', `Error: ${error.message}\n${error.stack}`);
+            }
+        }
+
+        async function runTest5() {
+            setStatus(5, 'pending', 'Testing leaderboard filtering...');
+            
+            try {
+                if (!window.dashboardManager) {
+                    throw new Error('DashboardManager not initialized');
+                }
+                
+                let results = [];
+                
+                const allDashboards = window.dashboardManager.getAllDashboards();
+                const leaderboardDashboards = window.dashboardManager.getLeaderboardDashboards();
+                
+                results.push('Leaderboard inclusion test:');
+                Object.keys(allDashboards).forEach(tableId => {
+                    const config = window.configSystem.getTableConfig(tableId);
+                    const included = leaderboardDashboards.hasOwnProperty(tableId);
+                    const shouldInclude = config.visible !== false && config.includeInLeaderboard !== false;
+                    const match = included === shouldInclude;
+                    
+                    results.push(`  ${match ? '✓' : '✗'} ${config.tableName}`);
+                    results.push(`    - Visible: ${config.visible}, Include: ${config.includeInLeaderboard}`);
+                    results.push(`    - In leaderboard: ${included} ${match ? '' : `(expected: ${shouldInclude})`}`);
+                });
+                
+                const allPassed = results.every(r => !r.includes('✗'));
+                setStatus(5, allPassed ? 'success' : 'error', results.join('\n'));
+            } catch (error) {
+                setStatus(5, 'error', `Error: ${error.message}\n${error.stack}`);
+            }
+        }
+
+        async function runTest6() {
+            setStatus(6, 'pending', 'Testing backward compatibility...');
+            
+            try {
+                let results = [];
+                
+                // Check legacy dashboard variables
+                results.push('Legacy dashboard variables:');
+                results.push(`  ✓ dashboard: ${typeof dashboard !== 'undefined' ? 'DEFINED' : 'UNDEFINED'}`);
+                results.push(`  ✓ dashboard2: ${typeof dashboard2 !== 'undefined' ? 'DEFINED' : 'UNDEFINED'}`);
+                results.push(`  ✓ dashboard3: ${typeof dashboard3 !== 'undefined' ? 'DEFINED' : 'UNDEFINED'}`);
+                results.push(`  ✓ dashboard4: ${typeof dashboard4 !== 'undefined' ? 'DEFINED' : 'UNDEFINED'}`);
+                results.push(`  ✓ dashboard5: ${typeof dashboard5 !== 'undefined' ? 'DEFINED' : 'UNDEFINED'}`);
+                results.push(`  ✓ dashboard6: ${typeof dashboard6 !== 'undefined' ? 'DEFINED' : 'UNDEFINED'}`);
+                
+                // Check window.dashboards object
+                results.push('\nwindow.dashboards object:');
+                results.push(`  ✓ Exists: ${window.dashboards ? 'YES' : 'NO'}`);
+                if (window.dashboards) {
+                    results.push(`  ✓ Keys: ${Object.keys(window.dashboards).join(', ')}`);
+                    results.push(`  ✓ tableBody: ${window.dashboards.tableBody ? 'EXISTS' : 'MISSING'}`);
+                    results.push(`  ✓ tableBody2: ${window.dashboards.tableBody2 ? 'EXISTS' : 'MISSING'}`);
+                }
+                
+                const allPassed = results.every(r => !r.includes('UNDEFINED') && !r.includes('MISSING') && !r.includes('NO'));
+                setStatus(6, allPassed ? 'success' : 'error', results.join('\n'));
+            } catch (error) {
+                setStatus(6, 'error', `Error: ${error.message}\n${error.stack}`);
+            }
+        }
+
+        async function runAllTests() {
+            await runTest1();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await runTest2();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await runTest3();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await runTest4();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await runTest5();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await runTest6();
+        }
+
+        // Auto-run tests after page loads
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                console.log('🧪 Integration tests ready. Click "Run All Tests" to begin.');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

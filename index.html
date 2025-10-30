@@ -25,6 +25,7 @@
     </script>
     <link rel="stylesheet" href="css/styles.css?v=1.0">
     <link rel="stylesheet" href="css/nav-styles.css?v=1.0">
+    <link rel="stylesheet" href="css/config-modal.css?v=1.0">
 </head>
 <body>
     <!-- Simple Working Navigation -->
@@ -98,6 +99,7 @@
                 <button class="btn btn-success" onclick="exportAllData()">📦 Export All Data</button>
                 <button class="btn btn-danger" onclick="clearAllData()">🗑️ Clear All Data</button>
                 <button class="btn btn-info" onclick="toggleFileNamingLegend()">📋 File Naming Guide</button>
+                <button class="btn btn-primary" onclick="if(window.configModal) configModal.show()">⚙️ Manage Tables</button>
             </div>
 
             <!-- File Naming Legend -->
@@ -1567,6 +1569,11 @@
         </div>
     </div>
 
+    <!-- Dynamic Tables Container -->
+    <div id="tables-container" style="margin-top: 40px;">
+        <!-- Dynamically generated tables will be inserted here -->
+    </div>
+
     <!-- SheetJS library for Excel processing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <!-- Chart.js for interactive charts -->
@@ -1593,6 +1600,24 @@
     <script>document.write('<script src="js/unified-leaderboard.js?v=' + cacheBuster + '"><\/script>');</script>
     <script>document.write('<script src="js/load-certificate-modal.js?v=' + cacheBuster + '"><\/script>');</script>
     <script>document.write('<script src="js/shout-out-verbiage-generator.js?v=' + cacheBuster + '"><\/script>');</script>
+    
+    <!-- Dynamic Table Configuration System -->
+    <script>document.write('<script src="js/table-config-system.js?v=' + cacheBuster + '"><\/script>');</script>
+    <script>document.write('<script src="js/file-routing-engine.js?v=' + cacheBuster + '"><\/script>');</script>
+    <script>document.write('<script src="js/dynamic-table-generator.js?v=' + cacheBuster + '"><\/script>');</script>
+    <script>document.write('<script src="js/dashboard-manager.js?v=' + cacheBuster + '"><\/script>');</script>
+    <script>document.write('<script src="js/config-modal.js?v=' + cacheBuster + '"><\/script>');</script>
+    
+    <!-- Initialize Config Modal -->
+    <script>
+        // Initialize config modal when page loads
+        window.addEventListener('DOMContentLoaded', function() {
+            if (typeof TableConfigSystem !== 'undefined' && typeof DashboardManager !== 'undefined') {
+                // These will be initialized by the main application
+                console.log('Config modal system loaded');
+            }
+        });
+    </script>
 
 </body>
 </html>
