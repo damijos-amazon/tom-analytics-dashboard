@@ -1,0 +1,22 @@
+{
+  "exportDate": "2025-10-27T00:00:00.000Z",
+  "recordCount": 2,
+  "tableId": 2,
+  "tableName": "VTI DPMO",
+  "data": [
+    {
+      "name": "smleean",
+      "priorMonth": 15.5,
+      "currentMonth": 10.2,
+      "change": -5.3,
+      "status": "Improved"
+    },
+    {
+      "name": "antoiche",
+      "priorMonth": 20.0,
+      "currentMonth": 12.5,
+      "change": -7.5,
+      "status": "Improved"
+    }
+  ]
+}
