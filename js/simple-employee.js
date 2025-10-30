@@ -86,16 +86,21 @@ function saveSimpleEmployee() {
     var excludeFromTables = document.getElementById('simpleExcludeFromTables').checked;
     var photoInput = document.getElementById('simplePhoto');
     
-    // Site, Badge ID and Full Name are ALWAYS required
-    if (!site || !badgeId || !fullName) {
-        console.warn('Site, Badge ID and Full Name are required!');
+    // Full Name is ALWAYS required
+    if (!fullName) {
+        console.warn('Full Name is required!');
         return;
     }
     
-    // If not excluded, username and email are also required
-    if (!excludeFromTables && (!username || !email)) {
-        console.warn('Username and Email are required unless employee is excluded from tables!');
-        return;
+    // If excluded, only Full Name is required
+    if (excludeFromTables) {
+        // Badge ID, Site, Username, Email are all optional for excluded employees
+    } else {
+        // If not excluded, Site, Badge ID, Username and Email are required
+        if (!site || !badgeId || !username || !email) {
+            console.warn('Site, Badge ID, Username and Email are required for non-excluded employees!');
+            return;
+        }
     }
     
     // Check for duplicates (skip if editing the same employee)
