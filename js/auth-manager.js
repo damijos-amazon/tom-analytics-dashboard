@@ -236,6 +236,125 @@ class AuthManager {
     getSupabaseClient() {
         return this.supabase;
     }
+
+    /**
+     * Request password reset email
+     * @param {string} email - User's email address
+     * @returns {Object} Result object with success status and message
+     */
+    async requestPasswordReset(email) {
+        try {
+            // Validate email format
+            if (!email || !email.includes('@')) {
+                return {
+                    success: false,
+                    message: 'Please enter a valid email address'
+                };
+            }
+            
+            // Check if email ends with @amazon.com
+            if (!email.toLowerCase().endsWith('@amazon.com')) {
+                return {
+                    success: false,
+                    message: 'Only Amazon employees can access this dashboard. Please use your @amazon.com email address.'
+                };
+            }
+            
+            const { error } = await this.supabase.auth.resetPasswordForEmail(
+                email.toLowerCase(),
+                {
+                    redirectTo: `${window.location.origin}/demo/reset-password.html`
+                }
+            );
+            
+            if (error) {
+                console.error('Password reset request error:', error);
+            }
+            
+            // Always return success message for security (don't reveal if account exists)
+            return {
+                success: true,
+                message: 'If an account exists with this email, you will receive a password reset link shortly.'
+            };
+            
+        } catch (error) {
+            console.error('Password reset request exception:', error);
+            return {
+                success: false,
+                message: 'An unexpected error occurred. Please try again.'
+            };
+        }
+    }
+
+    /**
+     * Reset password with new password
+     * @param {string} newPassword - New password
+     * @returns {Object} Result object with success status and message
+     */
+    async resetPassword(newPassword) {
+        try {
+            // Validate password
+            if (!newPassword || newPassword.length < 6) {
+                return {
+                    success: false,
+                    message: 'Password must be at least 6 characters long'
+                };
+            }
+            
+            const { error } = await this.supabase.auth.updateUser({
+                password: newPassword
+            });
+            
+            if (error) {
+                console.error('Password reset error:', error);
+                
+                // Handle specific error cases
+                if (error.message.includes('token') || error.message.includes('session')) {
+                    return {
+                        success: false,
+                        message: 'Invalid or expired reset link. Please request a new one.'
+                    };
+                }
+                
+                return {
+                    success: false,
+                    message: `Error: ${error.message}`
+                };
+            }
+            
+            return {
+                success: true,
+                message: 'Password reset successful! Redirecting to login...'
+            };
+            
+        } catch (error) {
+            console.error('Password reset exception:', error);
+            return {
+                success: false,
+                message: 'An unexpected error occurred. Please try again.'
+            };
+        }
+    }
+
+    /**
+     * Verify if user has a valid reset token
+     * @returns {Promise<boolean>} True if valid token exists
+     */
+    async hasValidResetToken() {
+        try {
+            const { data: { session } } = await this.supabase.auth.getSession();
+            
+            // Check if this is a password recovery session
+            if (session && session.user) {
+                return true;
+            }
+            
+            return false;
+        } catch (error) {
+            console.error('Token validation error:', error);
+            return false;
+        }
+    }
 }
 
 // Create global instance
