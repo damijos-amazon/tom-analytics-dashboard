@@ -683,45 +683,28 @@ class ConfigModal {
      * @returns {Object} Table configuration object
      */
     getFormData() {
-        const form = document.getElementById('tableConfigForm');
-        if (!form) {
-            throw new Error('Form not found');
-        }
-
-        // Check if form is actually a form element
-        let formData;
-        if (form instanceof HTMLFormElement) {
-            formData = new FormData(form);
-        } else {
-            // Manual form data collection if not a proper form
-            formData = new Map();
-            const inputs = form.querySelectorAll('input, select, textarea');
-            inputs.forEach(input => {
-                if (input.name) {
-                    formData.set(input.name, input.value);
-                }
-            });
-            // Add get method to mimic FormData
-            formData.get = function(key) { return this.has(key) ? this.get(key) : null; };
-        }
-
-        // Extract basic fields with null checks
-        const tableName = formData.get('tableName');
-        const displayName = formData.get('displayName');
-        const description = formData.get('description');
-        const direction = formData.get('direction');
-        const defaultBenchmark = formData.get('defaultBenchmark');
-        const color = formData.get('color');
+        // Read directly from input elements since tableConfigForm is a div, not a form
+        const tableNameInput = document.getElementById('tableName');
+        const displayNameInput = document.getElementById('displayName');
+        const descriptionInput = document.getElementById('description');
+        const directionInput = document.getElementById('direction');
+        const defaultBenchmarkInput = document.getElementById('defaultBenchmark');
+        const colorInput = document.getElementById('color');
+        const visibleInput = document.getElementById('visible');
+        const includeInLeaderboardInput = document.getElementById('includeInLeaderboard');
+        
+        const tableName = tableNameInput ? tableNameInput.value.trim() : '';
+        const displayName = displayNameInput ? displayNameInput.value.trim() : '';
         
         const config = {
-            tableName: tableName ? tableName.trim() : '',
-            displayName: (displayName ? displayName.trim() : '') || (tableName ? tableName.trim() : ''),
-            description: description ? description.trim() : '',
-            direction: direction || 'higher',
-            defaultBenchmark: defaultBenchmark ? parseFloat(defaultBenchmark) : 0,
-            color: color || '#FF9900',
-            visible: document.getElementById('visible').checked,
-            includeInLeaderboard: document.getElementById('includeInLeaderboard').checked
+            tableName: tableName,
+            displayName: displayName || tableName,
+            description: descriptionInput ? descriptionInput.value.trim() : '',
+            direction: directionInput ? directionInput.value : 'higher',
+            defaultBenchmark: defaultBenchmarkInput ? parseFloat(defaultBenchmarkInput.value) || 0 : 0,
+            color: colorInput ? colorInput.value : '#FF9900',
+            visible: visibleInput ? visibleInput.checked : true,
+            includeInLeaderboard: includeInLeaderboardInput ? includeInLeaderboardInput.checked : true
         };
 
         // Extract columns
