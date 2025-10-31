@@ -201,22 +201,38 @@
                     type="email" 
                     id="email" 
                     name="email" 
-                    placeholder="your.name@amazon.com"
+                    placeholder="username@amazon.com"
                     required
                     autocomplete="email"
                 >
             </div>
 
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    placeholder="Enter your password"
+                    required
+                    autocomplete="current-password"
+                >
+            </div>
+
             <button type="submit" class="btn-login" id="loginBtn">
-                Send Magic Link
+                Login
             </button>
         </form>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="#" id="toggleMode" style="color: #667eea; text-decoration: none; font-size: 14px;">New user? Sign up</a>
+        </div>
 
         <div id="message" class="message"></div>
 
         <div class="info-box">
             <strong>🔐 Secure Login</strong>
-            No password needed! We'll send a magic link to your Amazon email. Click the link to log in instantly.
+            Amazon employees only. Use your Amazon email address to sign up or log in.
         </div>
     </div>
 
@@ -230,8 +246,12 @@
     <script>
         const form = document.getElementById('loginForm');
         const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
         const loginBtn = document.getElementById('loginBtn');
         const messageDiv = document.getElementById('message');
+        const toggleModeLink = document.getElementById('toggleMode');
+        
+        let isSignUpMode = false;
 
         // Initialize auth manager
         authManager.initialize();
@@ -244,19 +264,39 @@
             }
         });
 
+        // Toggle between login and signup
+        toggleModeLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            isSignUpMode = !isSignUpMode;
+            
+            if (isSignUpMode) {
+                loginBtn.textContent = 'Sign Up';
+                toggleModeLink.textContent = 'Already have an account? Login';
+            } else {
+                loginBtn.textContent = 'Login';
+                toggleModeLink.textContent = 'New user? Sign up';
+            }
+            
+            messageDiv.classList.remove('show');
+        });
+
         // Handle form submission
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const email = emailInput.value.trim();
+            const password = passwordInput.value;
             
             // Disable button and show loading
             loginBtn.disabled = true;
-            loginBtn.innerHTML = 'Sending... <span class="loading"></span>';
+            const originalText = loginBtn.textContent;
+            loginBtn.innerHTML = 'Processing... <span class="loading"></span>';
             messageDiv.classList.remove('show');
             
-            // Attempt sign in
-            const result = await authManager.signIn(email);
+            // Attempt sign in or sign up
+            const result = isSignUpMode 
+                ? await authManager.signUp(email, password)
+                : await authManager.signIn(email, password);
             
             // Show message
             messageDiv.textContent = result.message;
@@ -264,15 +304,17 @@
             
             // Re-enable button
             loginBtn.disabled = false;
-            loginBtn.innerHTML = 'Send Magic Link';
+            loginBtn.textContent = originalText;
             
-            // Clear form if successful
+            // Redirect if successful
             if (result.success) {
-                emailInput.value = '';
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1000);
             }
         });
 
-        // Listen for auth state changes (when user clicks magic link)
+        // Listen for auth state changes
         authManager.onAuthStateChange((event, session) => {
             if (event === 'SIGNED_IN' && session) {
                 // Redirect to dashboard

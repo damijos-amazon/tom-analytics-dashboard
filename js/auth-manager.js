@@ -47,11 +47,12 @@ class AuthManager {
     }
 
     /**
-     * Sign in with email (magic link)
+     * Sign up with email and password
      * @param {string} email - User's email address
+     * @param {string} password - User's password
      * @returns {Object} Result object with success status and message
      */
-    async signIn(email) {
+    async signUp(email, password) {
         try {
             // Validate email format
             if (!email || !email.includes('@')) {
@@ -69,20 +70,24 @@ class AuthManager {
                 };
             }
             
-            // Send magic link
-            const redirectUrl = window.location.origin.includes('github.io') 
-                ? 'https://damijos-amazon.github.io/tom-analytics-dashboard/'
-                : window.location.origin + '/';
+            // Validate password
+            if (!password || password.length < 6) {
+                return {
+                    success: false,
+                    message: 'Password must be at least 6 characters long'
+                };
+            }
             
-            const { data, error } = await this.supabase.auth.signInWithOtp({
+            const { data, error } = await this.supabase.auth.signUp({
                 email: email.toLowerCase(),
+                password: password,
                 options: {
-                    emailRedirectTo: redirectUrl
+                    emailRedirectTo: window.location.origin
                 }
             });
             
             if (error) {
-                console.error('Sign in error:', error);
+                console.error('Sign up error:', error);
                 return {
                     success: false,
                     message: `Error: ${error.message}`
@@ -91,7 +96,68 @@ class AuthManager {
             
             return {
                 success: true,
-                message: `Magic link sent to ${email}! Check your email and click the link to log in.`
+                message: 'Account created successfully! You are now logged in.',
+                user: data.user
+            };
+            
+        } catch (error) {
+            console.error('Sign up exception:', error);
+            return {
+                success: false,
+                message: 'An unexpected error occurred. Please try again.'
+            };
+        }
+    }
+
+    /**
+     * Sign in with email and password
+     * @param {string} email - User's email address
+     * @param {string} password - User's password
+     * @returns {Object} Result object with success status and message
+     */
+    async signIn(email, password) {
+        try {
+            // Validate email format
+            if (!email || !email.includes('@')) {
+                return {
+                    success: false,
+                    message: 'Please enter a valid email address'
+                };
+            }
+            
+            // Check if email ends with @amazon.com
+            if (!email.toLowerCase().endsWith('@amazon.com')) {
+                return {
+                    success: false,
+                    message: 'Only Amazon employees can access this dashboard. Please use your @amazon.com email address.'
+                };
+            }
+            
+            // Validate password
+            if (!password) {
+                return {
+                    success: false,
+                    message: 'Please enter your password'
+                };
+            }
+            
+            const { data, error } = await this.supabase.auth.signInWithPassword({
+                email: email.toLowerCase(),
+                password: password
+            });
+            
+            if (error) {
+                console.error('Sign in error:', error);
+                return {
+                    success: false,
+                    message: 'Invalid email or password'
+                };
+            }
+            
+            return {
+                success: true,
+                message: 'Successfully logged in!',
+                user: data.user
             };
             
         } catch (error) {
