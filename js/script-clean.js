@@ -1384,7 +1384,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log('🚀 Initializing TOM Analytics Dashboard with configuration system...');
         
         // Initialize TableConfigSystem and load configuration
-        configSystem = new TableConfigSystem('demo/assets/table-config.json');
+        configSystem = new TableConfigSystem('assets/table-config.json');
         await configSystem.loadConfig();
         console.log('✅ Configuration loaded successfully');
         

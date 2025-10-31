@@ -57,4 +57,4 @@ This feature adds secure, passwordless authentication to the TOM Analytics Dashb
 1. WHEN a user logs in for the first time, THE Dashboard SHALL migrate their localStorage data to Supabase
 2. WHEN migration occurs, THE Dashboard SHALL preserve all table data, configurations, and settings
 3. WHEN migration is complete, THE Dashboard SHALL display a success message
-4. WHEN migration fails, THE Dashboard SHALL keep the data in localStorage and allow retry
+4. WHEN migration fails, THE Dashboard SHALL keep the data in localStorage and allow r

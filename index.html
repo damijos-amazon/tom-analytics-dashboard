@@ -179,16 +179,17 @@
 
         </section>
 
-        <!-- VTI Compliance Table -->
-        <section class="table-section" id="vti-compliance">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 class="table-title" style="margin: 0;">VTI Compliance</h2>
-                <button class="manual-refresh-btn" onclick="manualRefreshTable('tableBody', 'podium1')" title="Refresh Table & Podium">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
-                    </svg>
-                </button>
-            </div>
+        <!-- Dynamic Tables Container - Tables are generated from configuration -->
+        <div id="tables-container">
+            <!-- Dynamically generated tables will be inserted here by DynamicTableGenerator -->
+        </div>
+
+        <!-- Section Divider -->
+        <div class="section-divider"></div>
+
+        <!-- All hardcoded tables removed - now using dynamic table generation -->
+
+        <!-- TOM Team Leaderboard -->
             <div class="table-controls">
                 <div class="table-actions">
                     <button class="btn btn-danger" onclick="clearData()">Clear Data</button>
@@ -256,8 +257,8 @@
         <!-- Section Divider -->
         <div class="section-divider"></div>
 
-        <!-- Table 2 -->
-        <section class="table-section" id="vti-dpmo">
+        <!-- Table 2 (LEGACY - HIDDEN) -->
+        <section class="table-section" id="vti-dpmo-legacy" style="display:none;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h2 class="table-title" style="margin: 0;">VTI DPMO</h2>
                 <button class="manual-refresh-btn" onclick="manualRefreshTable('tableBody2', 'podium2')" title="Refresh Table & Podium">
@@ -332,8 +333,8 @@
         <!-- Section Divider -->
         <div class="section-divider"></div>
 
-        <!-- Table 3 -->
-        <section class="table-section" id="ta-idle-time">
+        <!-- Table 3 (LEGACY - HIDDEN) -->
+        <section class="table-section" id="ta-idle-time-legacy" style="display:none;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h2 class="table-title" style="margin: 0;">TA Idle Time</h2>
                 <button class="manual-refresh-btn" onclick="manualRefreshTable('tableBody3', 'podium3')" title="Refresh Table & Podium">
@@ -408,8 +409,8 @@
         <!-- Section Divider -->
         <div class="section-divider"></div>
 
-        <!-- Table 4 -->
-        <section class="table-section" id="seal-validation">
+        <!-- Table 4 (LEGACY - HIDDEN) -->
+        <section class="table-section" id="seal-validation-legacy" style="display:none;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h2 class="table-title" style="margin: 0;">Seal Validation Accuracy %</h2>
                 <button class="manual-refresh-btn" onclick="manualRefreshTable('tableBody4', 'podium4')" title="Refresh Table & Podium">
@@ -484,8 +485,8 @@
         <!-- Section Divider -->
         <div class="section-divider"></div>
 
-        <!-- Table 5 -->
-        <section class="table-section" id="ppo-compliance">
+        <!-- Table 5 (LEGACY - HIDDEN) -->
+        <section class="table-section" id="ppo-compliance-legacy" style="display:none;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h2 class="table-title" style="margin: 0;">PPO Compliance</h2>
                 <button class="manual-refresh-btn" onclick="manualRefreshTable('tableBody5', 'podium5')" title="Refresh Table & Podium">
@@ -560,8 +561,8 @@
         <!-- Section Divider -->
         <div class="section-divider"></div>
 
-        <!-- Table 6 -->
-        <section class="table-section" id="andon-response">
+        <!-- Table 6 (LEGACY - HIDDEN) -->
+        <section class="table-section" id="andon-response-legacy" style="display:none;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h2 class="table-title" style="margin: 0;">Andon Response Time</h2>
                 <button class="manual-refresh-btn" onclick="manualRefreshTable('tableBody6', 'podium6')" title="Refresh Table & Podium">
@@ -1587,10 +1588,7 @@
         </div>
     </div>
 
-    <!-- Dynamic Tables Container -->
-    <div id="tables-container" style="margin-top: 40px;">
-        <!-- Dynamically generated tables will be inserted here -->
-    </div>
+
 
     <!-- SheetJS library for Excel processing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -1691,10 +1689,10 @@
                                 await integrateDatabaseWithDashboards();
                                 console.log('✅ Database integration complete');
                                 
-                                // Update config modal with dashboard reference
-                                if (window.configModal && window.dashboards) {
-                                    window.configModal.dashboardManager = window.dashboards;
-                                    console.log('✅ Config modal connected to dashboards');
+                                // Update config modal with dashboard manager reference
+                                if (window.configModal && window.dashboardManager) {
+                                    window.configModal.dashboardManager = window.dashboardManager;
+                                    console.log('✅ Config modal connected to dashboard manager');
                                 }
                             }
                         }, 1000);

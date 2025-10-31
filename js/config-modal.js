@@ -657,8 +657,10 @@ class ConfigModal {
             // Delete from configuration
             await this.configSystem.deleteTable(tableId);
             
-            // Remove from dashboard manager
-            this.dashboardManager.removeTable(tableId);
+            // Remove from dashboard manager if available
+            if (this.dashboardManager && typeof this.dashboardManager.removeTable === 'function') {
+                this.dashboardManager.removeTable(tableId);
+            }
             
             // Show success message
             this.showMessage(`Table "${tableConfig.tableName}" deleted and data archived`, 'success');
@@ -767,8 +769,10 @@ class ConfigModal {
                 
                 await this.configSystem.updateTable(this.currentEditingTable, formData);
                 
-                // Refresh the table in dashboard manager
-                this.dashboardManager.refreshTable(this.currentEditingTable);
+                // Refresh the table in dashboard manager if available
+                if (this.dashboardManager && typeof this.dashboardManager.refreshTable === 'function') {
+                    this.dashboardManager.refreshTable(this.currentEditingTable);
+                }
                 
                 this.showMessage(`Table "${formData.tableName}" updated successfully`, 'success');
                 
@@ -778,8 +782,10 @@ class ConfigModal {
                 
                 const newTableId = await this.configSystem.addTable(formData);
                 
-                // Create the table in dashboard manager
-                this.dashboardManager.createTable(newTableId);
+                // Create the table in dashboard manager if available
+                if (this.dashboardManager && typeof this.dashboardManager.createTable === 'function') {
+                    this.dashboardManager.createTable(newTableId);
+                }
                 
                 this.showMessage(`Table "${formData.tableName}" created successfully`, 'success');
             }

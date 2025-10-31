@@ -1691,10 +1691,10 @@
                                 await integrateDatabaseWithDashboards();
                                 console.log('✅ Database integration complete');
                                 
-                                // Update config modal with dashboard reference
-                                if (window.configModal && window.dashboards) {
-                                    window.configModal.dashboardManager = window.dashboards;
-                                    console.log('✅ Config modal connected to dashboards');
+                                // Update config modal with dashboard manager reference
+                                if (window.configModal && window.dashboardManager) {
+                                    window.configModal.dashboardManager = window.dashboardManager;
+                                    console.log('✅ Config modal connected to dashboard manager');
                                 }
                             }
                         }, 1000);
