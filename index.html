@@ -1656,9 +1656,13 @@
         
         // Initialize config modal when page loads
         window.addEventListener('DOMContentLoaded', async function() {
-            if (typeof TableConfigSystem !== 'undefined' && typeof DashboardManager !== 'undefined') {
-                // These will be initialized by the main application
-                console.log('Config modal system loaded');
+            if (typeof TableConfigSystem !== 'undefined' && typeof ConfigModal !== 'undefined') {
+                // Initialize config modal
+                const configSystem = new TableConfigSystem();
+                await configSystem.loadConfig();
+                window.configModal = new ConfigModal(configSystem, null);
+                window.configModal.createModal();
+                console.log('✅ Config modal initialized');
             }
             
             // Initialize database integration
