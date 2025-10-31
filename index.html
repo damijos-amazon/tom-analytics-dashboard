@@ -1612,9 +1612,11 @@
     <script>
         // Initialize config modal when page loads
         window.addEventListener('DOMContentLoaded', function() {
-            if (typeof TableConfigSystem !== 'undefined' && typeof DashboardManager !== 'undefined') {
-                // These will be initialized by the main application
-                console.log('Config modal system loaded');
+            if (typeof ConfigModal !== 'undefined') {
+                window.configModal = new ConfigModal();
+                console.log('Config modal initialized');
+            } else {
+                console.error('ConfigModal class not found');
             }
         });
     </script>
