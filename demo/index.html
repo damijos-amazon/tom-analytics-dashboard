@@ -1665,29 +1665,31 @@
                 console.log('✅ Config modal initialized');
             }
             
-            // Initialize database integration
-            if (typeof initializeDashboardWithDatabase !== 'undefined') {
+            // Initialize database integration (only if Supabase is configured)
+            const supabaseUrl = localStorage.getItem('supabase_url');
+            const supabaseKey = localStorage.getItem('supabase_anon_key');
+            
+            if (supabaseUrl && supabaseKey && typeof initializeDashboardWithDatabase !== 'undefined') {
                 console.log('🔄 Initializing database integration...');
-                const dbInitialized = await initializeDashboardWithDatabase();
-                
-                if (dbInitialized) {
-                    console.log('✅ Database initialized successfully');
+                try {
+                    const dbInitialized = await initializeDashboardWithDatabase();
                     
-                    // Update user info display
-                    updateUserInfoDisplay();
-                    
-                    // Wait for dashboards to be created, then integrate
-                    setTimeout(async () => {
-                        if (window.dashboards && Object.keys(window.dashboards).length > 0) {
-                            await integrateDatabaseWithDashboards();
-                            console.log('✅ Database integration complete');
-                        } else {
-                            console.log('⚠️ No dashboards found, skipping database integration');
-                        }
-                    }, 1000);
-                } else {
-                    console.log('⚠️ Database not initialized, using localStorage mode');
+                    if (dbInitialized) {
+                        console.log('✅ Database initialized successfully');
+                        
+                        // Wait for dashboards to be created, then integrate
+                        setTimeout(async () => {
+                            if (window.dashboards && Object.keys(window.dashboards).length > 0) {
+                                await integrateDatabaseWithDashboards();
+                                console.log('✅ Database integration complete');
+                            }
+                        }, 1000);
+                    }
+                } catch (error) {
+                    console.log('⚠️ Database initialization failed, using localStorage mode');
                 }
+            } else {
+                console.log('ℹ️ Using localStorage mode (Supabase not configured)');
             }
         });
     </script>
