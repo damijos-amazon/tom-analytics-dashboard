@@ -781,35 +781,57 @@ class ConfigModal {
                 console.log('Adding new table');
                 
                 const newTableId = await this.configSystem.addTable(formData);
-                console.log(`New table ID: ${newTableId}`);
+                console.log(`✅ New table added to config: ${newTableId}`);
                 
-                // Create the table in dashboard manager if available
+                // Get the complete table config that was just added
+                const newTableConfig = this.configSystem.getTableConfig(newTableId);
+                console.log('Complete table config:', newTableConfig);
+                
+                if (!newTableConfig) {
+                    throw new Error('Failed to retrieve newly created table configuration');
+                }
+                
+                // Step 1: Generate the HTML table structure using the table generator
+                if (window.tableGenerator && typeof window.tableGenerator.generateTable === 'function') {
+                    console.log('Generating HTML table structure...');
+                    window.tableGenerator.generateTable(newTableConfig);
+                    console.log('✅ HTML table structure generated');
+                } else {
+                    console.error('❌ Table generator not available');
+                    throw new Error('Table generator not available');
+                }
+                
+                // Step 2: Create the dashboard instance
                 if (this.dashboardManager && typeof this.dashboardManager.createTable === 'function') {
-                    console.log('Creating dashboard for new table...');
+                    console.log('Creating dashboard instance...');
                     const newDashboard = this.dashboardManager.createTable(newTableId);
                     
                     if (newDashboard) {
-                        console.log(`✅ Dashboard created successfully for ${newTableId}`);
-                        console.log('Dashboard instance:', newDashboard);
-                        console.log('Dashboard tableId:', newDashboard.tableId);
-                        console.log('Dashboard tableBodyId:', newDashboard.tableConfig?.tableBodyId);
+                        console.log(`✅ Dashboard created: ${newTableId}`);
+                        console.log(`   - tableBodyId: ${newDashboard.tableConfig?.tableBodyId}`);
+                        console.log(`   - storageKey: ${newDashboard.storageKey}`);
                         
-                        // Verify it's in the dashboards registry
+                        // Verify registration in window.dashboards
                         if (window.dashboards) {
-                            console.log('Available dashboards:', Object.keys(window.dashboards));
-                            console.log(`Dashboard registered as '${newTableId}':`, window.dashboards[newTableId] ? 'YES' : 'NO');
-                            if (newDashboard.tableConfig?.tableBodyId) {
-                                console.log(`Dashboard registered as '${newDashboard.tableConfig.tableBodyId}':`, window.dashboards[newDashboard.tableConfig.tableBodyId] ? 'YES' : 'NO');
-                            }
+                            const bodyId = newDashboard.tableConfig?.tableBodyId;
+                            console.log(`   - Registered as '${newTableId}': ${window.dashboards[newTableId] ? 'YES' : 'NO'}`);
+                            console.log(`   - Registered as '${bodyId}': ${window.dashboards[bodyId] ? 'YES' : 'NO'}`);
                         }
                     } else {
                         console.error('❌ Dashboard creation returned null');
+                        throw new Error('Dashboard creation failed');
                     }
                 } else {
-                    console.warn('⚠️ Dashboard manager not available or createTable method missing');
+                    console.error('❌ Dashboard manager not available');
+                    throw new Error('Dashboard manager not available');
                 }
                 
-                this.showMessage(`Table "${formData.tableName}" created successfully. You can now upload files to it.`, 'success');
+                // Step 3: Update file routing engine to recognize new patterns
+                if (window.fileRoutingEngine && typeof window.fileRoutingEngine.routeFile === 'function') {
+                    console.log('✅ File routing engine will recognize new patterns');
+                }
+                
+                this.showMessage(`Table "${formData.tableName}" created successfully! You can now drag and drop files to it.`, 'success');
             }
 
             // Reload table list

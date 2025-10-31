@@ -206,11 +206,41 @@ class TOMDashboard {
                             const targetTableId = window.fileRoutingEngine.routeFile(file);
                             const targetConfig = window.configSystem.getTableConfig(targetTableId);
                             
-                            if (targetConfig && window.dashboards[targetConfig.tableBodyId]) {
-                                window.dashboards[targetConfig.tableBodyId].handleFileUpload([file]);
+                            if (!targetConfig) {
+                                console.error(`Config not found for ${targetTableId}`);
+                                throw new Error(`Config not found for ${targetTableId}`);
+                            }
+                            
+                            console.log(`File ${file.name} routed to table: ${targetTableId}`);
+                            console.log(`Target tableBodyId: ${targetConfig.tableBodyId}`);
+                            console.log(`Available dashboards:`, Object.keys(window.dashboards || {}));
+                            
+                            // Try to find dashboard by tableBodyId first, then by tableId
+                            let targetDashboard = window.dashboards[targetConfig.tableBodyId] || window.dashboards[targetTableId];
+                            
+                            if (targetDashboard) {
+                                console.log(`✓ Dashboard found, uploading file...`);
+                                targetDashboard.handleFileUpload([file]);
                             } else {
-                                console.warn(`Target dashboard not found for ${targetTableId}, using default`);
-                                window.dashboards['tableBody'].handleFileUpload([file]);
+                                console.warn(`Target dashboard not found for ${targetTableId} (tableBodyId: ${targetConfig.tableBodyId})`);
+                                console.warn(`Attempting to create dashboard...`);
+                                
+                                // Try to create the dashboard if dashboardManager is available
+                                if (window.dashboardManager && typeof window.dashboardManager.createTable === 'function') {
+                                    console.log(`Creating dashboard for ${targetTableId}...`);
+                                    targetDashboard = window.dashboardManager.createTable(targetTableId);
+                                    
+                                    if (targetDashboard) {
+                                        console.log(`✓ Dashboard created successfully, uploading file...`);
+                                        targetDashboard.handleFileUpload([file]);
+                                    } else {
+                                        console.error(`Failed to create dashboard for ${targetTableId}, using default`);
+                                        window.dashboards['tableBody'].handleFileUpload([file]);
+                                    }
+                                } else {
+                                    console.error(`DashboardManager not available, using default table`);
+                                    window.dashboards['tableBody'].handleFileUpload([file]);
+                                }
                             }
                         } catch (error) {
                             console.error('File routing error:', error);

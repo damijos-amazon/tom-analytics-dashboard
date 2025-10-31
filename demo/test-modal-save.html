@@ -71,6 +71,9 @@
         <div id="test5Results"></div>
     </div>
 
+    <!-- Container for dynamically generated tables -->
+    <div id="tables-container"></div>
+
     <!-- Load all required scripts -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="js/table-config-system.js"></script>
@@ -352,3 +355,61 @@
                 if (!testConfig) {
                     throw new Error('Failed to create test config');
                 }
+                log(resultsId, '✓ Table config created', 'success');
+                log(resultsId, '', 'info');
+
+                // Step 3: Save to config system
+                log(resultsId, 'Step 3: Saving to ConfigSystem...', 'info');
+                const tableId = await configSystem.addTable(testConfig);
+                log(resultsId, `✓ Saved with ID: ${tableId}`, 'success');
+                log(resultsId, '', 'info');
+
+                // Step 4: Create dashboard
+                log(resultsId, 'Step 4: Creating dashboard...', 'info');
+                const dashboard = dashboardManager.createTable(tableId);
+                if (!dashboard) {
+                    throw new Error('Dashboard creation failed');
+                }
+                log(resultsId, `✓ Dashboard created: ${dashboard.tableId}`, 'success');
+                log(resultsId, '', 'info');
+
+                // Step 5: Test file routing
+                log(resultsId, 'Step 5: Testing file routing...', 'info');
+                const mockFile = new File(['test'], 'current-andons-completed.xlsx', {
+                    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                });
+                const routedTableId = fileRoutingEngine.routeFile(mockFile);
+                log(resultsId, `✓ File routed to: ${routedTableId}`, 'success');
+                log(resultsId, '', 'info');
+
+                // Step 6: Verify dashboard exists for routed file
+                log(resultsId, 'Step 6: Verifying dashboard exists...', 'info');
+                const targetConfig = configSystem.getTableConfig(routedTableId);
+                if (targetConfig && window.dashboards[targetConfig.tableBodyId]) {
+                    log(resultsId, `✓ Dashboard exists and ready for file upload`, 'success');
+                    log(resultsId, `  - tableId: ${routedTableId}`, 'info');
+                    log(resultsId, `  - tableBodyId: ${targetConfig.tableBodyId}`, 'info');
+                    log(resultsId, `  - Dashboard instance: ${typeof window.dashboards[targetConfig.tableBodyId]}`, 'info');
+                } else {
+                    log(resultsId, `✗ Dashboard NOT found for routed file`, 'error');
+                    log(resultsId, `Available dashboards: ${Object.keys(window.dashboards || {}).join(', ')}`, 'info');
+                }
+
+                log(resultsId, '', 'info');
+                log(resultsId, '=== TEST COMPLETE ===', 'success');
+
+            } catch (error) {
+                log(resultsId, `✗ FATAL ERROR: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+
+        // Auto-initialize on load
+        window.addEventListener('DOMContentLoaded', async () => {
+            console.log('Page loaded, initializing...');
+            await initialize();
+            console.log('Ready for testing');
+        });
+    </script>
+</body>
+</html>

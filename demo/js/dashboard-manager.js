@@ -54,24 +54,30 @@ class DashboardManager {
         
         // Generate HTML if not exists
         if (!document.getElementById(tableConfig.tableBodyId)) {
+            console.log(`Generating HTML for table: ${tableId}`);
             this.tableGenerator.generateTable(tableConfig);
+        } else {
+            console.log(`HTML already exists for table: ${tableId}`);
         }
         
         // Create Dashboard instance
-        // Note: TOMDashboard constructor expects (tableId, podiumId, storageKey)
-        // Link the podium to this dashboard
+        // Pass the full tableConfig object so dashboard has access to columns, direction, etc.
         const podiumId = `podium_${tableConfig.tableBodyId}`;
         
         const dashboard = new TOMDashboard(
-            tableConfig.tableBodyId,
+            tableConfig,  // Pass full config object (new approach)
             podiumId,
             tableConfig.storageKey
         );
         
-        // Store additional config data on the dashboard instance
-        dashboard.tableConfig = tableConfig;
-        dashboard.direction = tableConfig.direction;
-        dashboard.defaultBenchmark = tableConfig.defaultBenchmark;
+        // Verify dashboard was created with correct config
+        console.log(`Dashboard created with:`, {
+            tableId: dashboard.tableId,
+            tableName: dashboard.tableName,
+            direction: dashboard.direction,
+            columns: dashboard.columns?.length || 0,
+            hasCustomColumns: dashboard.columns && dashboard.columns.length > 0
+        });
         
         // Store in both the new tableId and legacy tableBodyId for backward compatibility
         this.dashboards[tableId] = dashboard;
