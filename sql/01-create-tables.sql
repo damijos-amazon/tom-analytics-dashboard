@@ -1,6 +1,3 @@
--- TOM Analytics Dashboard - Database Schema
--- This script creates all necessary tables for the authentication and database system
-
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
@@ -83,7 +80,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Add triggers for updated_at columns
+-- Add triggers for updated_at
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON public.users
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 

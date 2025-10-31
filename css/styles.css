@@ -2763,3 +2763,31 @@ Refresh Button - Cool Beveled Light Blue */
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
 }
+
+
+/* Real-time Notification Animations */
+@keyframes slideIn {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+}
+
+.realtime-notification {
+    animation: slideIn 0.3s ease-out;
+}

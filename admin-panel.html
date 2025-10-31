@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - TOM Analytics</title>
+    <link rel="stylesheet" href="css/admin-panel.css">
+</head>
+<body>
+    <div class="admin-container">
+        <header class="admin-header">
+            <h1>TOM Analytics - Admin Panel</h1>
+            <div class="user-info">
+                <span id="currentUserEmail"></span>
+                <button id="logoutBtn" class="btn-secondary">Logout</button>
+            </div>
+        </header>
+
+        <nav class="admin-nav">
+            <button class="nav-tab active" data-tab="users">User Management</button>
+            <button class="nav-tab" data-tab="audit">Audit Logs</button>
+            <button class="nav-tab" data-tab="statistics">Statistics</button>
+            <button class="nav-tab" data-tab="sso">SSO Configuration</button>
+            <button class="nav-tab" data-tab="backup">Backup & Restore</button>
+        </nav>
+
+        <main class="admin-content">
+            <!-- User Management Section -->
+            <section id="users-section" class="tab-content active">
+                <h2>User Management</h2>
+                <div class="section-actions">
+                    <input type="text" id="userSearchInput" placeholder="Search users..." class="search-input">
+                    <button id="refreshUsersBtn" class="btn-secondary">Refresh</button>
+                </div>
+                <div id="usersTableContainer">
+                    <table id="usersTable" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Last Login</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <!-- Users will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="usersLoading" class="loading-spinner" style="display: none;">Loading users...</div>
+            </section>
+
+            <!-- Audit Logs Section -->
+            <section id="audit-section" class="tab-content">
+                <h2>Audit Logs</h2>
+                <div class="section-actions">
+                    <div class="filter-group">
+                        <label>Start Date:</label>
+                        <input type="date" id="auditStartDate" class="filter-input">
+                    </div>
+                    <div class="filter-group">
+                        <label>End Date:</label>
+                        <input type="date" id="auditEndDate" class="filter-input">
+                    </div>
+                    <div class="filter-group">
+                        <label>Action Type:</label>
+                        <select id="auditActionFilter" class="filter-input">
+                            <option value="">All Actions</option>
+                            <option value="login">Login</option>
+                            <option value="logout">Logout</option>
+                            <option value="data_update">Data Update</option>
+                            <option value="data_delete">Data Delete</option>
+                            <option value="role_change">Role Change</option>
+                            <option value="user_blocked">User Blocked</option>
+                            <option value="user_unblocked">User Unblocked</option>
+                        </select>
+                    </div>
+                    <button id="applyAuditFiltersBtn" class="btn-primary">Apply Filters</button>
+                    <button id="exportAuditLogsBtn" class="btn-secondary">Export CSV</button>
+                </div>
+                <div id="auditLogsTableContainer">
+                    <table id="auditLogsTable" class="data-table">
+                        <thead>
+                            <tr>
+                                <th class="sortable" data-sort="created_at">Timestamp</th>
+                                <th class="sortable" data-sort="user">User</th>
+                                <th class="sortable" data-sort="action">Action</th>
+                                <th>Resource Type</th>
+                                <th>Resource ID</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody id="auditLogsTableBody">
+                            <!-- Audit logs will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="auditLoading" class="loading-spinner" style="display: none;">Loading audit logs...</div>
+            </section>
+
+            <!-- Statistics Section -->
+            <section id="statistics-section" class="tab-content">
+                <h2>System Statistics</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Users</h3>
+                        <div class="stat-value" id="statTotalUsers">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Active Users</h3>
+                        <div class="stat-value" id="statActiveUsers">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Blocked Users</h3>
+                        <div class="stat-value" id="statBlockedUsers">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Admins</h3>
+                        <div class="stat-value" id="statAdminCount">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Managers</h3>
+                        <div class="stat-value" id="statManagerCount">-</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <h3>Login Activity (Last 30 Days)</h3>
+                    <canvas id="loginActivityChart"></canvas>
+                </div>
+
+                <div class="active-users-container">
+                    <h3>Most Active Users</h3>
+                    <table id="activeUsersTable" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Activity Count</th>
+                            </tr>
+                        </thead>
+                        <tbody id="activeUsersTableBody">
+                            <!-- Active users will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="statsLoading" class="loading-spinner" style="display: none;">Loading statistics...</div>
+            </section>
+
+            <!-- SSO Configuration Section -->
+            <section id="sso-section" class="tab-content">
+                <h2>SSO Configuration</h2>
+                <div class="sso-providers">
+                    <div class="sso-provider-card">
+                        <h3>Microsoft Azure AD</h3>
+                        <div class="provider-status">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="azureEnabled" data-provider="azure">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span>Enabled</span>
+                        </div>
+                        <button class="btn-secondary" data-provider="azure" onclick="editSSOProvider('azure')">Configure</button>
+                    </div>
+
+                    <div class="sso-provider-card">
+                        <h3>Google Workspace</h3>
+                        <div class="provider-status">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="googleEnabled" data-provider="google">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span>Enabled</span>
+                        </div>
+                        <button class="btn-secondary" data-provider="google" onclick="editSSOProvider('google')">Configure</button>
+                    </div>
+
+                    <div class="sso-provider-card">
+                        <h3>Okta</h3>
+                        <div class="provider-status">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="oktaEnabled" data-provider="okta">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span>Enabled</span>
+                        </div>
+                        <button class="btn-secondary" data-provider="okta" onclick="editSSOProvider('okta')">Configure</button>
+                    </div>
+                </div>
+                <div id="ssoLoading" class="loading-spinner" style="display: none;">Loading SSO configuration...</div>
+            </section>
+
+            <!-- Backup & Restore Section -->
+            <section id="backup-section" class="tab-content">
+                <h2>Backup & Restore</h2>
+                <div class="backup-actions">
+                    <div class="backup-card">
+                        <h3>Export System Data</h3>
+                        <p>Download a complete backup of all system data including users, table data, configurations, and audit logs.</p>
+                        <button id="exportBackupBtn" class="btn-primary">Export Backup</button>
+                        <div id="exportProgress" class="progress-indicator" style="display: none;">
+                            <div class="progress-bar"></div>
+                            <span class="progress-text">Exporting...</span>
+                        </div>
+                    </div>
+
+                    <div class="backup-card">
+                        <h3>Import System Data</h3>
+                        <p>Restore system data from a backup file. This will validate and import all data.</p>
+                        <input type="file" id="importFileInput" accept=".json" style="display: none;">
+                        <button id="importBackupBtn" class="btn-primary">Select Backup File</button>
+                        <div id="importProgress" class="progress-indicator" style="display: none;">
+                            <div class="progress-bar"></div>
+                            <span class="progress-text">Importing...</span>
+                        </div>
+                        <div id="importFileName" class="file-name"></div>
+                    </div>
+                </div>
+                <div id="backupLoading" class="loading-spinner" style="display: none;">Processing...</div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Block User Modal -->
+    <div id="blockUserModal" class="modal">
+        <div class="modal-content">
+            <h3>Block User</h3>
+            <p>Are you sure you want to block this user?</p>
+            <p class="user-email-display" id="blockUserEmail"></p>
+            <label for="blockReason">Reason (optional):</label>
+            <textarea id="blockReason" rows="3" placeholder="Enter reason for blocking..."></textarea>
+            <div class="modal-actions">
+                <button id="confirmBlockBtn" class="btn-danger">Block User</button>
+                <button id="cancelBlockBtn" class="btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unblock User Modal -->
+    <div id="unblockUserModal" class="modal">
+        <div class="modal-content">
+            <h3>Unblock User</h3>
+            <p>Are you sure you want to unblock this user?</p>
+            <p class="user-email-display" id="unblockUserEmail"></p>
+            <div class="modal-actions">
+                <button id="confirmUnblockBtn" class="btn-primary">Unblock User</button>
+                <button id="cancelUnblockBtn" class="btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Role Change Modal -->
+    <div id="roleChangeModal" class="modal">
+        <div class="modal-content">
+            <h3>Change User Role</h3>
+            <p id="roleChangeMessage"></p>
+            <p class="user-email-display" id="roleChangeUserEmail"></p>
+            <div class="modal-actions">
+                <button id="confirmRoleChangeBtn" class="btn-primary">Confirm</button>
+                <button id="cancelRoleChangeBtn" class="btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SSO Configuration Modal -->
+    <div id="ssoConfigModal" class="modal">
+        <div class="modal-content large">
+            <h3>Configure SSO Provider: <span id="ssoProviderName"></span></h3>
+            <form id="ssoConfigForm">
+                <div class="form-group">
+                    <label for="ssoClientId">Client ID:</label>
+                    <input type="text" id="ssoClientId" required>
+                </div>
+                <div class="form-group">
+                    <label for="ssoClientSecret">Client Secret:</label>
+                    <input type="password" id="ssoClientSecret" required>
+                </div>
+                <div class="form-group">
+                    <label for="ssoTenantId">Tenant ID (Azure only):</label>
+                    <input type="text" id="ssoTenantId">
+                </div>
+                <div class="form-group">
+                    <label for="ssoRedirectUri">Redirect URI:</label>
+                    <input type="text" id="ssoRedirectUri" required>
+                </div>
+                <div id="ssoConfigError" class="error-message" style="display: none;"></div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn-primary">Save Configuration</button>
+                    <button type="button" id="cancelSSOConfigBtn" class="btn-secondary">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="notificationToast" class="notification-toast"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script src="js/auth-service.js"></script>
+    <script src="js/database-service.js"></script>
+    <script src="js/admin-panel-service.js"></script>
+    <script src="js/admin-panel.js"></script>
+</body>
+</html>
