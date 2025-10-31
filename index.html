@@ -1604,6 +1604,13 @@
     
     <!-- Supabase for authentication and database -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Supabase Authentication System -->
+    <script src="js/supabase-config.js"></script>
+    <script src="js/auth-manager.js"></script>
+    <script src="js/supabase-sync-manager.js"></script>
+    <script src="js/data-migration-service.js"></script>
+    
     <!-- Dynamic cache busting - automatically loads latest files -->
     <script>document.write('<script src="js/script-clean.js?v=' + cacheBuster + '"><\/script>');</script>
     <script>document.write('<script src="js/benchmark-modal.js?v=' + cacheBuster + '"><\/script>');</script>
@@ -1692,6 +1699,70 @@
                 console.log('ℹ️ Using localStorage mode (Supabase not configured)');
             }
         });
+    </script>
+
+    <!-- Authentication Check and Initialization -->
+    <script>
+        (async function() {
+            // Initialize auth manager
+            await authManager.initialize();
+            
+            // Check if user is authenticated
+            const session = await authManager.getSession();
+            
+            if (!session) {
+                // Not authenticated - redirect to login
+                console.log('User not authenticated - redirecting to login');
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            console.log('✅ User authenticated:', session.user.email);
+            
+            // Initialize sync manager
+            const syncManager = new SupabaseSyncManager(authManager);
+            syncManager.initialize();
+            window.syncManager = syncManager;
+            
+            // Initialize migration service
+            const migrationService = new DataMigrationService(authManager, syncManager);
+            window.migrationService = migrationService;
+            
+            // Check if migration is needed
+            if (!migrationService.isMigrationComplete() && migrationService.hasLocalData()) {
+                console.log('📦 Migrating local data to Supabase...');
+                const result = await migrationService.migrateUserData(session.user.id);
+                
+                if (result.success) {
+                    console.log('✅ Migration complete:', result.message);
+                    if (result.itemCount > 0) {
+                        alert(`Welcome! Your data has been migrated to the cloud. ${result.itemCount} items synced.`);
+                    }
+                } else {
+                    console.error('❌ Migration failed:', result.message);
+                }
+            }
+            
+            // Add logout button to header
+            const header = document.querySelector('header') || document.body;
+            const logoutBtn = document.createElement('button');
+            logoutBtn.textContent = '🚪 Logout';
+            logoutBtn.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 10000; background: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;';
+            logoutBtn.onclick = async () => {
+                if (confirm('Are you sure you want to logout?')) {
+                    await authManager.signOut();
+                    window.location.href = 'login.html';
+                }
+            };
+            document.body.appendChild(logoutBtn);
+            
+            // Show user email
+            const userEmail = document.createElement('div');
+            userEmail.textContent = session.user.email;
+            userEmail.style.cssText = 'position: fixed; top: 60px; right: 20px; z-index: 10000; background: #28a745; color: white; padding: 5px 15px; border-radius: 5px; font-size: 12px;';
+            document.body.appendChild(userEmail);
+            
+        })();
     </script>
 
 </body>

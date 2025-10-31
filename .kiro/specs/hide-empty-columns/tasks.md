@@ -25,6 +25,8 @@
   - Skip "Change" column header when `hasPriorMonth` is false
   - Maintain all other columns (Rank, Name, Current Month, Status, Actions)
 
+
+
   - _Requirements: 1.1, 1.2, 1.4_
 
 - [ ] 4. Update table body generation to conditionally show column cells
