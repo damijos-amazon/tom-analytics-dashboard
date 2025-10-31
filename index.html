@@ -11,7 +11,7 @@
         // Automatic cache busting - generates unique timestamp for each page load
         var cacheBuster = new Date().getTime();
         // Force reload on version change
-        var APP_VERSION = '3.0.0';
+        var APP_VERSION = '3.0.1';
         var storedVersion = localStorage.getItem('appVersion');
         if (storedVersion !== APP_VERSION) {
             console.log('🔄 App updated to version ' + APP_VERSION + ' - Clearing cache');
@@ -1608,18 +1608,7 @@
     <script>document.write('<script src="js/dashboard-manager.js?v=' + cacheBuster + '"><\/script>');</script>
     <script>document.write('<script src="js/config-modal.js?v=' + cacheBuster + '"><\/script>');</script>
     
-    <!-- Initialize Config Modal -->
-    <script>
-        // Initialize config modal when page loads
-        window.addEventListener('DOMContentLoaded', function() {
-            if (typeof ConfigModal !== 'undefined') {
-                window.configModal = new ConfigModal();
-                console.log('Config modal initialized');
-            } else {
-                console.error('ConfigModal class not found');
-            }
-        });
-    </script>
+    <!-- Config Modal initialized by script-clean.js -->
 
 </body>
 </html>

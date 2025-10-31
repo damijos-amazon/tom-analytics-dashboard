@@ -1412,6 +1412,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.fileRoutingEngine = fileRoutingEngine;
         window.tableGenerator = tableGenerator;
         
+        // Initialize ConfigModal with config system and dashboard manager
+        if (typeof ConfigModal !== 'undefined') {
+            window.configModal = new ConfigModal(configSystem, dashboardManager);
+            console.log('✅ Config modal initialized');
+        }
+        
         console.log('✅ All components initialized successfully');
         console.log(`📊 ${Object.keys(dashboards).length} dashboards ready`);
         
