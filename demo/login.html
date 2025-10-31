@@ -13,13 +13,47 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Amazon Ember', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #232F3E 0%, #131A22 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
+        }
+
+        input[type="email"]:focus {
+            outline: none;
+            border-color: #FF9900;
+            box-shadow: 0 0 0 3px rgba(255, 153, 0, 0.1);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #FF9900 0%, #FF6600 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 153, 0, 0.4);
+        }
+
+        .info-box {
+            background: #FFF3E0;
+            border: 1px solid #FFD700;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 25px;
+            font-size: 13px;
+            color: #232F3E;
         }
 
         .login-container {
@@ -86,14 +120,14 @@
 
         input[type="email"]:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: #FF9900;
+            box-shadow: 0 0 0 3px rgba(255, 153, 0, 0.1);
         }
 
         .btn-login {
             width: 100%;
             padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #FF9900 0%, #FF6600 100%);
             color: white;
             border: none;
             border-radius: 10px;
@@ -105,7 +139,7 @@
 
         .btn-login:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 10px 20px rgba(255, 153, 0, 0.4);
         }
 
         .btn-login:active {
@@ -171,13 +205,13 @@
         }
 
         .info-box {
-            background: #e7f3ff;
-            border: 1px solid #b3d9ff;
+            background: #FFF3E0;
+            border: 1px solid #FFD700;
             border-radius: 10px;
             padding: 15px;
             margin-top: 25px;
             font-size: 13px;
-            color: #004085;
+            color: #232F3E;
         }
 
         .info-box strong {
@@ -188,9 +222,11 @@
 </head>
 <body>
     <div class="login-container">
-        <div class="logo">📊</div>
+        <div class="logo">
+            <img src="assets/logos/TOM-NA.png" alt="TOM" style="width: 80px; height: 80px; object-fit: contain;">
+        </div>
         <h1>TOM Analytics Dashboard</h1>
-        <p class="subtitle">Amazon Employees Only</p>
+        <p class="subtitle">Analytics • Recognition • 1:1 Thrives • Shout Outs • Employee of the Month</p>
 
         <form id="loginForm">
             <div class="form-group">

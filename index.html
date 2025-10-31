@@ -1707,6 +1707,23 @@
             // Initialize auth manager
             await authManager.initialize();
             
+            // Check if this is a magic link callback (has hash params)
+            const hashParams = new URLSearchParams(window.location.hash.substring(1));
+            const hasAuthTokens = hashParams.has('access_token') || hashParams.has('error');
+            
+            if (hasAuthTokens) {
+                console.log('🔗 Processing magic link callback...');
+                // Wait longer for Supabase to process the tokens and establish session
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Force a session refresh after callback
+                const { data: { session: refreshedSession } } = await authManager.supabase.auth.refreshSession();
+                if (refreshedSession) {
+                    console.log('✅ Session established from magic link');
+                    authManager.currentUser = refreshedSession.user;
+                }
+            }
+            
             // Check if user is authenticated
             const session = await authManager.getSession();
             
