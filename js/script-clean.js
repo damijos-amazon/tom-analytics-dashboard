@@ -47,19 +47,27 @@ class TOMDashboard {
     }
 
     setupEventListeners() {
-        if (this.tableId === 'tableBody') {
+        // Setup file upload listeners ONLY ONCE for the first dashboard
+        if (this.tableId === 'tableBody' && !window._fileUploadListenersSetup) {
             const fileInput = document.getElementById('fileInput');
             const uploadArea = document.getElementById('uploadArea');
             if (fileInput && uploadArea) {
                 uploadArea.addEventListener('click', () => fileInput.click());
-                fileInput.addEventListener('change', (e) => this.routeFilesToTables(e.target.files));
+                fileInput.addEventListener('change', (e) => {
+                    // Route files using the first dashboard's routing method
+                    if (window.dashboards && window.dashboards['tableBody']) {
+                        window.dashboards['tableBody'].routeFilesToTables(e.target.files);
+                    }
+                });
+                window._fileUploadListenersSetup = true;
+                console.log('✅ File upload listeners set up');
             }
         }
     }
 
     setupDragAndDrop() {
-        // Only setup file drag & drop for the first dashboard (main table)
-        if (this.tableId === 'tableBody') {
+        // Setup file drag & drop ONLY ONCE for the upload area
+        if (this.tableId === 'tableBody' && !window._dragDropListenersSetup) {
             const uploadArea = document.getElementById('uploadArea');
             if (!uploadArea) return;
 
@@ -79,8 +87,11 @@ class TOMDashboard {
                 e.preventDefault();
                 e.stopPropagation();
                 uploadArea.classList.remove('dragover');
-                console.log('Drop event triggered!', e.dataTransfer.files);
-                this.routeFilesToTables(e.dataTransfer.files);
+                console.log('🎯 Drop event triggered!', e.dataTransfer.files);
+                // Route files using the first dashboard's routing method
+                if (window.dashboards && window.dashboards['tableBody']) {
+                    window.dashboards['tableBody'].routeFilesToTables(e.dataTransfer.files);
+                }
             });
             
             // Prevent default drag/drop behavior on entire document
@@ -91,6 +102,9 @@ class TOMDashboard {
             document.addEventListener('drop', (e) => {
                 e.preventDefault();
             });
+            
+            window._dragDropListenersSetup = true;
+            console.log('✅ Drag & drop listeners set up');
         }
 
         this.setupTableDragAndDrop();
@@ -189,14 +203,49 @@ class TOMDashboard {
                     // Use FileRoutingEngine if available, otherwise fall back to legacy routing
                     if (window.fileRoutingEngine && window.configSystem) {
                         try {
+                            console.log(`🔍 Starting file routing for: ${file.name}`);
                             const targetTableId = window.fileRoutingEngine.routeFile(file);
-                            const targetConfig = window.configSystem.getTableConfig(targetTableId);
+                            console.log(`✓ Routed to tableId: ${targetTableId}`);
                             
-                            if (targetConfig && window.dashboards[targetConfig.tableBodyId]) {
-                                window.dashboards[targetConfig.tableBodyId].handleFileUpload([file]);
+                            const targetConfig = window.configSystem.getTableConfig(targetTableId);
+                            console.log(`✓ Got config:`, targetConfig ? 'YES' : 'NO');
+                            
+                            if (!targetConfig) {
+                                console.error(`❌ Config not found for ${targetTableId}`);
+                                throw new Error(`Config not found for ${targetTableId}`);
+                            }
+                            
+                            console.log(`📋 File ${file.name} routed to table: ${targetTableId}`);
+                            console.log(`📋 Target tableBodyId: ${targetConfig.tableBodyId}`);
+                            console.log(`📋 Available dashboards:`, Object.keys(window.dashboards || {}));
+                            
+                            // Try to find dashboard by tableBodyId first, then by tableId
+                            let targetDashboard = window.dashboards[targetConfig.tableBodyId] || window.dashboards[targetTableId];
+                            console.log(`🎯 Dashboard lookup result:`, targetDashboard ? 'FOUND' : 'NOT FOUND');
+                            
+                            if (targetDashboard) {
+                                console.log(`✓ Dashboard found, uploading file...`);
+                                targetDashboard.handleFileUpload([file]);
                             } else {
-                                console.warn(`Target dashboard not found for ${targetTableId}, using default`);
-                                window.dashboards['tableBody'].handleFileUpload([file]);
+                                console.warn(`Target dashboard not found for ${targetTableId} (tableBodyId: ${targetConfig.tableBodyId})`);
+                                console.warn(`Attempting to create dashboard...`);
+                                
+                                // Try to create the dashboard if dashboardManager is available
+                                if (window.dashboardManager && typeof window.dashboardManager.createTable === 'function') {
+                                    console.log(`Creating dashboard for ${targetTableId}...`);
+                                    targetDashboard = window.dashboardManager.createTable(targetTableId);
+                                    
+                                    if (targetDashboard) {
+                                        console.log(`✓ Dashboard created successfully, uploading file...`);
+                                        targetDashboard.handleFileUpload([file]);
+                                    } else {
+                                        console.error(`Failed to create dashboard for ${targetTableId}, using default`);
+                                        window.dashboards['tableBody'].handleFileUpload([file]);
+                                    }
+                                } else {
+                                    console.error(`DashboardManager not available, using default table`);
+                                    window.dashboards['tableBody'].handleFileUpload([file]);
+                                }
                             }
                         } catch (error) {
                             console.error('File routing error:', error);
@@ -1384,7 +1433,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log('🚀 Initializing TOM Analytics Dashboard with configuration system...');
         
         // Initialize TableConfigSystem and load configuration
-        configSystem = new TableConfigSystem('assets/table-config.json');
+        configSystem = new TableConfigSystem('demo/assets/table-config.json');
         await configSystem.loadConfig();
         console.log('✅ Configuration loaded successfully');
         

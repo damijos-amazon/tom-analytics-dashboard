@@ -203,20 +203,25 @@ class TOMDashboard {
                     // Use FileRoutingEngine if available, otherwise fall back to legacy routing
                     if (window.fileRoutingEngine && window.configSystem) {
                         try {
+                            console.log(`🔍 Starting file routing for: ${file.name}`);
                             const targetTableId = window.fileRoutingEngine.routeFile(file);
+                            console.log(`✓ Routed to tableId: ${targetTableId}`);
+                            
                             const targetConfig = window.configSystem.getTableConfig(targetTableId);
+                            console.log(`✓ Got config:`, targetConfig ? 'YES' : 'NO');
                             
                             if (!targetConfig) {
-                                console.error(`Config not found for ${targetTableId}`);
+                                console.error(`❌ Config not found for ${targetTableId}`);
                                 throw new Error(`Config not found for ${targetTableId}`);
                             }
                             
-                            console.log(`File ${file.name} routed to table: ${targetTableId}`);
-                            console.log(`Target tableBodyId: ${targetConfig.tableBodyId}`);
-                            console.log(`Available dashboards:`, Object.keys(window.dashboards || {}));
+                            console.log(`📋 File ${file.name} routed to table: ${targetTableId}`);
+                            console.log(`📋 Target tableBodyId: ${targetConfig.tableBodyId}`);
+                            console.log(`📋 Available dashboards:`, Object.keys(window.dashboards || {}));
                             
                             // Try to find dashboard by tableBodyId first, then by tableId
                             let targetDashboard = window.dashboards[targetConfig.tableBodyId] || window.dashboards[targetTableId];
+                            console.log(`🎯 Dashboard lookup result:`, targetDashboard ? 'FOUND' : 'NOT FOUND');
                             
                             if (targetDashboard) {
                                 console.log(`✓ Dashboard found, uploading file...`);
