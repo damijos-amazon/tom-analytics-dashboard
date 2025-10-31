@@ -120,7 +120,7 @@ class ConfigModal {
                                 <label>File Upload Patterns *</label>
                                 <div id="patternEditor" class="editor-container"></div>
                                 <button type="button" class="btn btn-secondary btn-sm" onclick="configModal.addPatternField()">
-                                    + Add Pattern
+                                    + Add File Name Rule
                                 </button>
                             </div>
                             
