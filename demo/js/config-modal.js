@@ -607,13 +607,21 @@ class ConfigModal {
             // Update configuration
             await this.configSystem.toggleTableVisibility(tableId, newVisibility);
             
-            // Update dashboard manager
-            if (newVisibility) {
-                this.dashboardManager.showTable(tableId);
-                this.showMessage(`Table "${tableConfig.tableName}" is now visible`, 'success');
+            // Update dashboard manager if it exists
+            if (this.dashboardManager) {
+                if (newVisibility) {
+                    if (typeof this.dashboardManager.showTable === 'function') {
+                        this.dashboardManager.showTable(tableId);
+                    }
+                    this.showMessage(`Table "${tableConfig.tableName}" is now visible`, 'success');
+                } else {
+                    if (typeof this.dashboardManager.hideTable === 'function') {
+                        this.dashboardManager.hideTable(tableId);
+                    }
+                    this.showMessage(`Table "${tableConfig.tableName}" is now hidden`, 'success');
+                }
             } else {
-                this.dashboardManager.hideTable(tableId);
-                this.showMessage(`Table "${tableConfig.tableName}" is now hidden`, 'success');
+                this.showMessage(`Table "${tableConfig.tableName}" visibility updated. Refresh page to see changes.`, 'success');
             }
             
             // Reload table list
