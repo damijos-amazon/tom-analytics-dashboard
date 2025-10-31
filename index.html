@@ -1690,6 +1690,12 @@
                             if (window.dashboards && Object.keys(window.dashboards).length > 0) {
                                 await integrateDatabaseWithDashboards();
                                 console.log('✅ Database integration complete');
+                                
+                                // Update config modal with dashboard reference
+                                if (window.configModal && window.dashboards) {
+                                    window.configModal.dashboardManager = window.dashboards;
+                                    console.log('✅ Config modal connected to dashboards');
+                                }
                             }
                         }, 1000);
                     }
