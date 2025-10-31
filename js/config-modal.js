@@ -604,8 +604,13 @@ class ConfigModal {
 
             const newVisibility = !tableConfig.visible;
             
-            // Update configuration
-            await this.configSystem.toggleTableVisibility(tableId, newVisibility);
+            // When hiding, also exclude from leaderboard
+            // When showing, restore leaderboard inclusion
+            tableConfig.visible = newVisibility;
+            tableConfig.includeInLeaderboard = newVisibility;
+            
+            // Save updated configuration
+            await this.configSystem.saveTableConfig(tableConfig);
             
             // Update dashboard manager if it exists
             if (this.dashboardManager) {
@@ -613,12 +618,12 @@ class ConfigModal {
                     if (typeof this.dashboardManager.showTable === 'function') {
                         this.dashboardManager.showTable(tableId);
                     }
-                    this.showMessage(`Table "${tableConfig.tableName}" is now visible`, 'success');
+                    this.showMessage(`Table "${tableConfig.tableName}" is now visible and included in leaderboard`, 'success');
                 } else {
                     if (typeof this.dashboardManager.hideTable === 'function') {
                         this.dashboardManager.hideTable(tableId);
                     }
-                    this.showMessage(`Table "${tableConfig.tableName}" is now hidden`, 'success');
+                    this.showMessage(`Table "${tableConfig.tableName}" is now hidden and excluded from leaderboard`, 'success');
                 }
             } else {
                 this.showMessage(`Table "${tableConfig.tableName}" visibility updated. Refresh page to see changes.`, 'success');
