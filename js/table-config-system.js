@@ -7,15 +7,39 @@ class TableConfigSystem {
         this.configPath = configPath;
         this.config = null;
         this.defaultConfig = this.getDefaultConfig();
+        this.databaseService = null; // Will be set by dashboard-init.js
     }
 
     /**
-     * Load configuration from localStorage with fallback to JSON file
+     * Load configuration from Supabase, localStorage, or JSON file
      * @returns {Promise<Object>} The loaded configuration
      */
     async loadConfig() {
         try {
-            // First, try to load from localStorage (user customizations)
+            // Priority 1: Try to load from Supabase (if database service is available)
+            if (this.databaseService && typeof this.databaseService.getLatestTableConfiguration === 'function') {
+                try {
+                    console.log('Loading configuration from Supabase...');
+                    const supabaseConfig = await this.databaseService.getLatestTableConfiguration();
+                    
+                    if (supabaseConfig && supabaseConfig.config) {
+                        const validation = this.validateConfig(supabaseConfig.config);
+                        
+                        if (validation.valid) {
+                            this.config = supabaseConfig.config;
+                            console.log('✅ Configuration loaded from Supabase');
+                            return this.config;
+                        } else {
+                            console.warn('Supabase configuration is invalid:', validation.errors);
+                        }
+                    }
+                } catch (supabaseError) {
+                    console.warn('Failed to load from Supabase:', supabaseError.message);
+                    // Fall through to localStorage
+                }
+            }
+            
+            // Priority 2: Try to load from localStorage (user customizations)
             const storedConfig = localStorage.getItem('table_config');
             
             if (storedConfig) {
@@ -25,7 +49,7 @@ class TableConfigSystem {
                 
                 if (validation.valid) {
                     this.config = parsedConfig;
-                    console.log('Configuration loaded successfully from localStorage');
+                    console.log('✅ Configuration loaded from localStorage');
                     return this.config;
                 } else {
                     console.warn('Stored configuration is invalid:', validation.errors);
@@ -33,7 +57,7 @@ class TableConfigSystem {
                 }
             }
             
-            // Load from JSON file (default configuration)
+            // Priority 3: Load from JSON file (default configuration)
             console.log('Loading configuration from file:', this.configPath);
             const response = await fetch(this.configPath);
             
@@ -49,7 +73,7 @@ class TableConfigSystem {
             }
             
             this.config = fileConfig;
-            console.log('Configuration loaded successfully from file');
+            console.log('✅ Configuration loaded from file');
             return this.config;
             
         } catch (error) {
@@ -384,9 +408,20 @@ class TableConfigSystem {
                 throw new Error(`Invalid config: ${validation.errors.join(', ')}`);
             }
             
-            // Save to localStorage
+            // Save to Supabase first (if available)
+            if (this.databaseService && typeof this.databaseService.saveTableConfiguration === 'function') {
+                try {
+                    await this.databaseService.saveTableConfiguration(newConfig);
+                    console.log('✅ Configuration saved to Supabase');
+                } catch (supabaseError) {
+                    console.error('⚠️ Failed to save to Supabase:', supabaseError.message);
+                    // Continue to save to localStorage as fallback
+                }
+            }
+            
+            // Save to localStorage (always as backup)
             localStorage.setItem('table_config', JSON.stringify(newConfig));
-            console.log('Configuration saved to localStorage');
+            console.log('✅ Configuration saved to localStorage');
             
             // Update in-memory config
             this.config = newConfig;

@@ -192,7 +192,35 @@
           "priority": 2
         }
       ],
-      "columns": null
+      "columns": [
+        {
+          "id": "name",
+          "label": "Associate Name",
+          "dataType": "text",
+          "visible": true,
+          "sortable": true,
+          "editable": false,
+          "fileColumnMapping": "T"
+        },
+        {
+          "id": "priorMonth",
+          "label": "Prior Month (min)",
+          "dataType": "number",
+          "visible": true,
+          "sortable": true,
+          "editable": false,
+          "fileColumnMapping": "AE"
+        },
+        {
+          "id": "currentMonth",
+          "label": "Current Month (min)",
+          "dataType": "number",
+          "visible": true,
+          "sortable": true,
+          "editable": false,
+          "fileColumnMapping": "AE"
+        }
+      ]
     }
   ]
 }

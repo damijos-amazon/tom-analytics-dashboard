@@ -1220,6 +1220,13 @@
             // Step 1: Initialize Table Configuration System
             if (typeof TableConfigSystem !== 'undefined') {
                 window.configSystem = new TableConfigSystem();
+                
+                // Connect database service if available
+                if (window.databaseService) {
+                    window.configSystem.databaseService = window.databaseService;
+                    console.log('✅ Database service connected to config system');
+                }
+                
                 await window.configSystem.loadConfig();
                 console.log('✅ Table Configuration System loaded');
             } else {
