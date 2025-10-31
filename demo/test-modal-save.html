@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Modal Save Flow</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-result {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Modal Save Flow Test</h1>
+    
+    <div class="test-section">
+        <h2>Test 1: Create Table Configuration</h2>
+        <button onclick="testCreateTable()">Run Test</button>
+        <div id="test1Results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Save to ConfigSystem</h2>
+        <button onclick="testSaveToConfigSystem()">Run Test</button>
+        <div id="test2Results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: Create Dashboard</h2>
+        <button onclick="testCreateDashboard()">Run Test</button>
+        <div id="test3Results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 4: File Upload to New Table</h2>
+        <button onclick="testFileUpload()">Run Test</button>
+        <div id="test4Results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 5: Full End-to-End Flow</h2>
+        <button onclick="testFullFlow()">Run Full Test</button>
+        <div id="test5Results"></div>
+    </div>
+
+    <!-- Load all required scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="js/table-config-system.js"></script>
+    <script src="js/file-routing-engine.js"></script>
+    <script src="js/dynamic-table-generator.js"></script>
+    <script src="js/dashboard-manager.js"></script>
+    <script src="js/script-clean.js"></script>
+    <script src="js/config-modal.js"></script>
+
+    <script>
+        let configSystem, fileRoutingEngine, tableGenerator, dashboardManager, configModal;
+
+        function log(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.textContent = message;
+            container.appendChild(div);
+        }
+
+        function logObject(containerId, obj) {
+            const container = document.getElementById(containerId);
+            const pre = document.createElement('pre');
+            pre.textContent = JSON.stringify(obj, null, 2);
+            container.appendChild(pre);
+        }
+
+        async function initialize() {
+            try {
+                // Initialize config system
+                configSystem = new TableConfigSystem();
+                await configSystem.loadConfig();
+                console.log('Config system initialized');
+
+                // Initialize file routing
+                fileRoutingEngine = new FileRoutingEngine(configSystem);
+                window.fileRoutingEngine = fileRoutingEngine;
+                window.configSystem = configSystem;
+                console.log('File routing initialized');
+
+                // Initialize table generator
+                tableGenerator = new DynamicTableGenerator(configSystem);
+                window.tableGenerator = tableGenerator;
+                console.log('Table generator initialized');
+
+                // Initialize dashboard manager
+                dashboardManager = new DashboardManager(configSystem, tableGenerator);
+                await dashboardManager.initializeDashboards();
+                window.dashboardManager = dashboardManager;
+                window.dashboards = dashboardManager.dashboards;
+                console.log('Dashboard manager initialized');
+
+                // Initialize config modal
+                configModal = new ConfigModal(configSystem, dashboardManager);
+                window.configModal = configModal;
+                console.log('Config modal initialized');
+
+                return true;
+            } catch (error) {
+                console.error('Initialization failed:', error);
+                return false;
+            }
+        }
+
+        async function testCreateTable() {
+            const resultsId = 'test1Results';
+            document.getElementById(resultsId).innerHTML = '';
+
+            try {
+                log(resultsId, 'Creating test table configuration...', 'info');
+
+                const testTableConfig = {
+                    tableName: 'Test Andons Completed',
+                    displayName: 'Andons Completed',
+                    description: 'Test table for andons completed tracking',
+                    direction: 'higher',
+                    defaultBenchmark: 10,
+                    color: '#FF9900',
+                    visible: true,
+                    includeInLeaderboard: true,
+                    filePatterns: [
+                        { pattern: 'andons-completed', type: 'contains', priority: 1 },
+                        { pattern: 'current-andons-completed', type: 'exact', priority: 1 },
+                        { pattern: 'prior-andons-completed', type: 'exact', priority: 1 }
+                    ],
+                    columns: [
+                        { id: 'name', label: 'Associate Name', dataType: 'text', visible: true, sortable: true, editable: false, fileColumnMapping: 'A' },
+                        { id: 'priorMonth', label: 'Prior Month', dataType: 'number', visible: true, sortable: true, editable: false, fileColumnMapping: 'B' },
+                        { id: 'currentMonth', label: 'Current Month', dataType: 'number', visible: true, sortable: true, editable: false, fileColumnMapping: 'C' }
+                    ]
+                };
+
+                log(resultsId, '✓ Test configuration created', 'success');
+                logObject(resultsId, testTableConfig);
+
+                return testTableConfig;
+            } catch (error) {
+                log(resultsId, `✗ Error: ${error.message}`, 'error');
+                console.error(error);
+                return null;
+            }
+        }
+
+        async function testSaveToConfigSystem() {
+            const resultsId = 'test2Results';
+            document.getElementById(resultsId).innerHTML = '';
+
+            try {
+                if (!configSystem) {
+                    await initialize();
+                }
+
+                log(resultsId, 'Testing save to ConfigSystem...', 'info');
+
+                const testConfig = await testCreateTable();
+                if (!testConfig) {
+                    throw new Error('Failed to create test config');
+                }
+
+                log(resultsId, 'Adding table to config system...', 'info');
+                const newTableId = await configSystem.addTable(testConfig);
+                
+                log(resultsId, `✓ Table added with ID: ${newTableId}`, 'success');
+
+                // Verify it was added
+                const savedConfig = configSystem.getTableConfig(newTableId);
+                if (savedConfig) {
+                    log(resultsId, '✓ Table configuration saved and retrievable', 'success');
+                    logObject(resultsId, savedConfig);
+                } else {
+                    log(resultsId, '✗ Table configuration not found after save', 'error');
+                }
+
+                // Check localStorage
+                const storedConfig = localStorage.getItem('table_config');
+                if (storedConfig) {
+                    const parsed = JSON.parse(storedConfig);
+                    const found = parsed.tables.find(t => t.tableId === newTableId);
+                    if (found) {
+                        log(resultsId, '✓ Table found in localStorage', 'success');
+                    } else {
+                        log(resultsId, '✗ Table NOT found in localStorage', 'error');
+                    }
+                }
+
+                return newTableId;
+            } catch (error) {
+                log(resultsId, `✗ Error: ${error.message}`, 'error');
+                console.error(error);
+                return null;
+            }
+        }
+
+        async function testCreateDashboard() {
+            const resultsId = 'test3Results';
+            document.getElementById(resultsId).innerHTML = '';
+
+            try {
+                if (!dashboardManager) {
+                    await initialize();
+                }
+
+                log(resultsId, 'Testing dashboard creation...', 'info');
+
+                const tableId = await testSaveToConfigSystem();
+                if (!tableId) {
+                    throw new Error('Failed to save table config');
+                }
+
+                log(resultsId, `Creating dashboard for table: ${tableId}`, 'info');
+                const dashboard = dashboardManager.createTable(tableId);
+
+                if (dashboard) {
+                    log(resultsId, '✓ Dashboard created successfully', 'success');
+                    log(resultsId, `  - Dashboard tableId: ${dashboard.tableId}`, 'info');
+                    log(resultsId, `  - Dashboard tableBodyId: ${dashboard.tableConfig?.tableBodyId}`, 'info');
+                    log(resultsId, `  - Dashboard columns: ${dashboard.columns?.length || 0}`, 'info');
+
+                    // Check if it's in the registry
+                    if (window.dashboards && window.dashboards[tableId]) {
+                        log(resultsId, `✓ Dashboard registered as '${tableId}'`, 'success');
+                    } else {
+                        log(resultsId, `✗ Dashboard NOT registered as '${tableId}'`, 'error');
+                    }
+
+                    if (dashboard.tableConfig?.tableBodyId && window.dashboards[dashboard.tableConfig.tableBodyId]) {
+                        log(resultsId, `✓ Dashboard registered as '${dashboard.tableConfig.tableBodyId}'`, 'success');
+                    } else {
+                        log(resultsId, `✗ Dashboard NOT registered as '${dashboard.tableConfig.tableBodyId}'`, 'error');
+                    }
+
+                    // Check if HTML was generated
+                    const tableElement = document.getElementById(dashboard.tableConfig?.tableBodyId);
+                    if (tableElement) {
+                        log(resultsId, '✓ Table HTML element exists in DOM', 'success');
+                    } else {
+                        log(resultsId, '✗ Table HTML element NOT found in DOM', 'error');
+                    }
+                } else {
+                    log(resultsId, '✗ Dashboard creation returned null', 'error');
+                }
+
+                return dashboard;
+            } catch (error) {
+                log(resultsId, `✗ Error: ${error.message}`, 'error');
+                console.error(error);
+                return null;
+            }
+        }
+
+        async function testFileUpload() {
+            const resultsId = 'test4Results';
+            document.getElementById(resultsId).innerHTML = '';
+
+            try {
+                if (!fileRoutingEngine) {
+                    await initialize();
+                }
+
+                log(resultsId, 'Testing file routing...', 'info');
+
+                const dashboard = await testCreateDashboard();
+                if (!dashboard) {
+                    throw new Error('Failed to create dashboard');
+                }
+
+                // Create a mock file
+                const mockFile = new File(['test'], 'current-andons-completed.xlsx', {
+                    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                });
+
+                log(resultsId, `Routing file: ${mockFile.name}`, 'info');
+                const targetTableId = fileRoutingEngine.routeFile(mockFile);
+                
+                log(resultsId, `✓ File routed to table: ${targetTableId}`, 'success');
+
+                // Check if target dashboard exists
+                const targetConfig = configSystem.getTableConfig(targetTableId);
+                if (targetConfig) {
+                    log(resultsId, `✓ Target config found: ${targetConfig.tableName}`, 'success');
+                    log(resultsId, `  - tableBodyId: ${targetConfig.tableBodyId}`, 'info');
+
+                    if (window.dashboards && window.dashboards[targetConfig.tableBodyId]) {
+                        log(resultsId, `✓ Target dashboard exists in registry`, 'success');
+                    } else {
+                        log(resultsId, `✗ Target dashboard NOT found in registry`, 'error');
+                        log(resultsId, `Available dashboards: ${Object.keys(window.dashboards || {}).join(', ')}`, 'info');
+                    }
+                } else {
+                    log(resultsId, `✗ Target config NOT found`, 'error');
+                }
+
+            } catch (error) {
+                log(resultsId, `✗ Error: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+
+        async function testFullFlow() {
+            const resultsId = 'test5Results';
+            document.getElementById(resultsId).innerHTML = '';
+
+            try {
+                log(resultsId, '=== FULL END-TO-END TEST ===', 'info');
+                log(resultsId, '', 'info');
+
+                // Step 1: Initialize
+                log(resultsId, 'Step 1: Initializing system...', 'info');
+                const initialized = await initialize();
+                if (!initialized) {
+                    throw new Error('Initialization failed');
+                }
+                log(resultsId, '✓ System initialized', 'success');
+                log(resultsId, '', 'info');
+
+                // Step 2: Create table config
+                log(resultsId, 'Step 2: Creating table configuration...', 'info');
+                const testConfig = await testCreateTable();
+                if (!testConfig) {
+                    throw new Error('Failed to create test config');
+                }

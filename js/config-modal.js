@@ -781,13 +781,35 @@ class ConfigModal {
                 console.log('Adding new table');
                 
                 const newTableId = await this.configSystem.addTable(formData);
+                console.log(`New table ID: ${newTableId}`);
                 
                 // Create the table in dashboard manager if available
                 if (this.dashboardManager && typeof this.dashboardManager.createTable === 'function') {
-                    this.dashboardManager.createTable(newTableId);
+                    console.log('Creating dashboard for new table...');
+                    const newDashboard = this.dashboardManager.createTable(newTableId);
+                    
+                    if (newDashboard) {
+                        console.log(`✅ Dashboard created successfully for ${newTableId}`);
+                        console.log('Dashboard instance:', newDashboard);
+                        console.log('Dashboard tableId:', newDashboard.tableId);
+                        console.log('Dashboard tableBodyId:', newDashboard.tableConfig?.tableBodyId);
+                        
+                        // Verify it's in the dashboards registry
+                        if (window.dashboards) {
+                            console.log('Available dashboards:', Object.keys(window.dashboards));
+                            console.log(`Dashboard registered as '${newTableId}':`, window.dashboards[newTableId] ? 'YES' : 'NO');
+                            if (newDashboard.tableConfig?.tableBodyId) {
+                                console.log(`Dashboard registered as '${newDashboard.tableConfig.tableBodyId}':`, window.dashboards[newDashboard.tableConfig.tableBodyId] ? 'YES' : 'NO');
+                            }
+                        }
+                    } else {
+                        console.error('❌ Dashboard creation returned null');
+                    }
+                } else {
+                    console.warn('⚠️ Dashboard manager not available or createTable method missing');
                 }
                 
-                this.showMessage(`Table "${formData.tableName}" created successfully`, 'success');
+                this.showMessage(`Table "${formData.tableName}" created successfully. You can now upload files to it.`, 'success');
             }
 
             // Reload table list
