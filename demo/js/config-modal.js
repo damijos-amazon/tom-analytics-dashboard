@@ -259,8 +259,18 @@ class ConfigModal {
 
         // Reset form
         const form = document.getElementById('tableConfigForm');
-        if (form) {
+        if (form && typeof form.reset === 'function') {
             form.reset();
+        } else if (form) {
+            // Manual reset if form.reset doesn't exist
+            const inputs = form.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                if (input.type === 'checkbox' || input.type === 'radio') {
+                    input.checked = false;
+                } else {
+                    input.value = '';
+                }
+            });
         }
 
         // Set default values
@@ -666,7 +676,22 @@ class ConfigModal {
             throw new Error('Form not found');
         }
 
-        const formData = new FormData(form);
+        // Check if form is actually a form element
+        let formData;
+        if (form instanceof HTMLFormElement) {
+            formData = new FormData(form);
+        } else {
+            // Manual form data collection if not a proper form
+            formData = new Map();
+            const inputs = form.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                if (input.name) {
+                    formData.set(input.name, input.value);
+                }
+            });
+            // Add get method to mimic FormData
+            formData.get = function(key) { return this.has(key) ? this.get(key) : null; };
+        }
 
         // Extract basic fields
         const config = {
