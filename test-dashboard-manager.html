@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Manager Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        button {
+            margin: 5px;
+            padding: 8px 15px;
+            cursor: pointer;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+        #output {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 3px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        #tables-container {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Dashboard Manager Test</h1>
+    
+    <div class="test-section">
+        <h3>Test Controls</h3>
+        <button onclick="testInitialize()">1. Initialize Dashboards</button>
+        <button onclick="testGetDashboard()">2. Get Dashboard</button>
+        <button onclick="testGetVisible()">3. Get Visible Dashboards</button>
+        <button onclick="testGetLeaderboard()">4. Get Leaderboard Dashboards</button>
+        <button onclick="testHideTable()">5. Hide Table</button>
+        <button onclick="testShowTable()">6. Show Table</button>
+        <button onclick="testRefreshTable()">7. Refresh Table</button>
+        <button onclick="testRemoveTable()">8. Remove Table</button>
+        <button onclick="clearOutput()">Clear Output</button>
+    </div>
+
+    <div class="test-section">
+        <h3>Output</h3>
+        <div id="output"></div>
+    </div>
+
+    <div id="tables-container"></div>
+
+    <!-- Load dependencies -->
+    <script src="js/table-config-system.js"></script>
+    <script src="js/dynamic-table-generator.js"></script>
+    <script src="js/dashboard-manager.js"></script>
+    
+    <!-- Mock TOMDashboard for testing -->
+    <script>
+        // Simple mock of TOMDashboard for testing
+        class TOMDashboard {
+            constructor(tableId, podiumId, storageKey) {
+                this.tableId = tableId;
+                this.podiumId = podiumId;
+                this.storageKey = storageKey;
+                this.data = [];
+                log(`TOMDashboard created: ${tableId}`);
+            }
+            
+            renderTable() {
+                log(`Rendering table: ${this.tableId}`);
+            }
+        }
+    </script>
+
+    <script>
+        let configSystem;
+        let tableGenerator;
+        let dashboardManager;
+
+        function log(message, isError = false) {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = isError ? 'error' : 'success';
+            output.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            console.log(message);
+        }
+
+        function clearOutput() {
+            document.getElementById('output').innerHTML = '';
+        }
+
+        async function testInitialize() {
+            try {
+                log('=== Test: Initialize Dashboards ===');
+                
+                // Create instances
+                configSystem = new TableConfigSystem();
+                await configSystem.loadConfig();
+                log(`✓ Config loaded: ${configSystem.getAllTables().length} tables`);
+                
+                tableGenerator = new DynamicTableGenerator(configSystem);
+                log('✓ Table generator created');
+                
+                dashboardManager = new DashboardManager(configSystem, tableGenerator);
+                log('✓ Dashboard manager created');
+                
+                await dashboardManager.initializeDashboards();
+                log(`✓ Dashboards initialized: ${Object.keys(dashboardManager.getAllDashboards()).length} instances`);
+                
+                // List all dashboards
+                const allDashboards = dashboardManager.getAllDashboards();
+                Object.keys(allDashboards).forEach(tableId => {
+                    log(`  - ${tableId}: ${allDashboards[tableId].tableId}`);
+                });
+                
+            } catch (error) {
+                log(`✗ Error: ${error.message}`, true);
+                console.error(error);
+            }
+        }
+
+        function testGetDashboard() {
+            try {
+                log('=== Test: Get Dashboard ===');
+                
+                if (!dashboardManager) {
+                    log('✗ Dashboard manager not initialized', true);
+                    return;
+                }
+                
+                const tableId = 'vti-compliance';
+                const dashboard = dashboardManager.getDashboard(tableId);
+                
+                if (dashboard) {
+                    log(`✓ Dashboard found: ${tableId}`);
+                    log(`  - tableId: ${dashboard.tableId}`);
+                    log(`  - storageKey: ${dashboard.storageKey}`);
+                } else {
+                    log(`✗ Dashboard not found: ${tableId}`, true);
+                }
+                
+            } catch (error) {
+                log(`✗ Error: ${error.message}`, true);
+                console.error(error);
+            }
+        }
+
+        function testGetVisible() {
+            try {
+                log('=== Test: Get Visible Dashboards ===');
+                
+                if (!dashboardManager) {
+                    log('✗ Dashboard manager not initialized', true);
+                    return;
+                }
+                
+                const visible = dashboardManager.getVisibleDashboards();
+                log(`✓ Found ${Object.keys(visible).length} visible dashboards`);
+                
+                Object.keys(visible).forEach(tableId => {
+                    log(`  - ${tableId}`);
+                });
+                
+            } catch (error) {
+                log(`✗ Error: ${error.message}`, true);
+                console.error(error);
+            }
+        }
+
+        function testGetLeaderboard() {
+            try {
+                log('=== Test: Get Leaderboard Dashboards ===');
+                
+                if (!dashboardManager) {
+                    log('✗ Dashboard manager not initialized', true);
+                    return;
+                }
+                
+                const leaderboard = dashboardManager.getLeaderboardDashboards();
+                log(`✓ Found ${Object.keys(leaderboard).length} leaderboard dashboards`);
+                
+                Object.keys(leaderboard).forEach(tableId => {
+                    log(`  - ${tableId}`);
+                });
+                
+            } catch (error) {
+                log(`✗ Error: ${error.message}`, true);
+                console.error(error);
+            }
+        }
+
+        function testHideTable() {
+            try {
+                log('=== Test: Hide Table ===');
+                
+                if (!dashboardManager) {
+                    log('✗ Dashboard manager not initialized', true);
+                    return;
+                }
+                
+                const tableId = 'vti-compliance';
+                dashboardManager.hideTable(tableId);
+                log(`✓ Table hidden: ${tableId}`);
+                
+                const dashboard = dashboardManager.getDashboard(tableId);
+                if (dashboard && dashboard.hidden) {
+                    log('✓ Dashboard marked as hidden');
+                }
+                
+            } catch (error) {
+                log(`✗ Error: ${error.message}`, true);
+                console.error(error);
+            }
+        }
+
+        function testShowTable() {
+            try {
+                log('=== Test: Show Table ===');
+                
+                if (!dashboardManager) {
+                    log('✗ Dashboard manager not initialized', true);
+                    return;
+                }
+                
+                const tableId = 'vti-compliance';
+                dashboardManager.showTable(tableId);
+                log(`✓ Table shown: ${tableId}`);
+                
+                const dashboard = dashboardManager.getDashboard(tableId);
+                if (dashboard && !dashboard.hidden) {
+                    log('✓ Dashboard marked as visible');
+                }
+                
+            } catch (error) {
+                log(`✗ Error: ${error.message}`, true);
+                console.error(error);
+            }
+        }
+
+        function testRefreshTable() {
+            try {
+                log('=== Test: Refresh Table ===');
+                
+                if (!dashboardManager) {
+                    log('✗ Dashboard manager not initialized', true);
+                    return;
+                }
+                
+                const tableId = 'vti-compliance';
+                
+                // Add some mock data
+                const dashboard = dashboardManager.getDashboard(tableId);
+                if (dashboard) {
+                    dashboard.data = [
+                        { name: 'Test 1', value: 100 },
+                        { name: 'Test 2', value: 200 }
+                    ];
+                    log(`✓ Added ${dashboard.data.length} rows of test data`);
+                }
+                
+                dashboardManager.refreshTable(tableId);
+                log(`✓ Table refreshed: ${tableId}`);
+                
+                const refreshedDashboard = dashboardManager.getDashboard(tableId);
+                if (refreshedDashboard && refreshedDashboard.data) {
+                    log(`✓ Data preserved: ${refreshedDashboard.data.length} rows`);
+                }
+                
+            } catch (error) {
+                log(`✗ Error: ${error.message}`, true);
+                console.error(error);
+            }
+        }
+
+        function testRemoveTable() {
+            try {
+                log('=== Test: Remove Table ===');
+                
+                if (!dashboardManager) {
+                    log('✗ Dashboard manager not initialized', true);
+                    return;
+                }
+                
+                const tableId = 'vti-dpmo';
+                
+                // Add some mock data
+                const dashboard = dashboardManager.getDashboard(tableId);
+                if (dashboard) {
+                    dashboard.data = [
+                        { name: 'Test 1', value: 100 }
+                    ];
+                    log(`✓ Added test data to ${tableId}`);
+                }
+                
+                dashboardManager.removeTable(tableId);
+                log(`✓ Table removed: ${tableId}`);
+                
+                const removedDashboard = dashboardManager.getDashboard(tableId);
+                if (!removedDashboard) {
+                    log('✓ Dashboard instance removed');
+                }
+                
+                // Check if data was archived
+                const archiveKeys = Object.keys(localStorage).filter(key => 
+                    key.includes('archived') && key.includes(tableId)
+                );
+                if (archiveKeys.length > 0) {
+                    log(`✓ Data archived: ${archiveKeys[0]}`);
+                }
+                
+            } catch (error) {
+                log(`✗ Error: ${error.message}`, true);
+                console.error(error);
+            }
+        }
+
+        // Auto-run initialization on load
+        window.addEventListener('load', () => {
+            log('Page loaded. Click "Initialize Dashboards" to start testing.');
+        });
+    </script>
+</body>
+</html>

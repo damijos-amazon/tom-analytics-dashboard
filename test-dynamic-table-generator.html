@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Table Generator Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #232F3E;
+            border-bottom: 3px solid #FF9900;
+            padding-bottom: 10px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .test-pass {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .test-fail {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        #tables-container {
+            margin-top: 20px;
+        }
+        .table-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .table-title {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .table-description {
+            color: #666;
+            margin-bottom: 15px;
+        }
+        .table-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        .table-actions, .export-controls {
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-export {
+            background: #FF9900;
+            color: white;
+        }
+        .table-container {
+            overflow-x: auto;
+            border-top: 3px solid #FF9900;
+        }
+        .compliance-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .compliance-table th {
+            background: #232F3E;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        .compliance-table tbody {
+            background: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Dynamic Table Generator Test Suite</h1>
+        
+        <div class="test-section">
+            <h2>Test Results</h2>
+            <div id="testResults"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>Generated Tables</h2>
+            <div id="tables-container"></div>
+        </div>
+    </div>
+
+    <!-- Load dependencies -->
+    <script src="js/table-config-system.js"></script>
+    <script src="js/dynamic-table-generator.js"></script>
+
+    <script>
+        // Test Suite
+        const testResults = document.getElementById('testResults');
+
+        function logTest(name, passed, message) {
+            const div = document.createElement('div');
+            div.className = `test-result ${passed ? 'test-pass' : 'test-fail'}`;
+            div.innerHTML = `<strong>${passed ? '✓' : '✗'} ${name}</strong><br>${message}`;
+            testResults.appendChild(div);
+            return passed;
+        }
+
+        async function runTests() {
+            console.log('Starting Dynamic Table Generator tests...');
+            let allPassed = true;
+
+            // Test 1: Initialize TableConfigSystem
+            try {
+                const configSystem = new TableConfigSystem();
+                await configSystem.loadConfig();
+                allPassed &= logTest(
+                    'Test 1: TableConfigSystem Initialization',
+                    configSystem.config !== null,
+                    `Configuration loaded with ${configSystem.config.tables.length} tables`
+                );
+            } catch (error) {
+                allPassed &= logTest(
+                    'Test 1: TableConfigSystem Initialization',
+                    false,
+                    `Error: ${error.message}`
+                );
+                return;
+            }
+
+            // Test 2: Initialize DynamicTableGenerator
+            try {
+                const configSystem = new TableConfigSystem();
+                await configSystem.loadConfig();
+                const generator = new DynamicTableGenerator(configSystem);
+                
+                allPassed &= logTest(
+                    'Test 2: DynamicTableGenerator Initialization',
+                    generator !== null && generator.configSystem !== null,
+                    'Generator initialized successfully'
+                );
+            } catch (error) {
+                allPassed &= logTest(
+                    'Test 2: DynamicTableGenerator Initialization',
+                    false,
+                    `Error: ${error.message}`
+                );
+                return;
+            }
+
+            // Test 3: Generate single table
+            try {
+                const configSystem = new TableConfigSystem();
+                await configSystem.loadConfig();
+                const generator = new DynamicTableGenerator(configSystem);
+                
+                const tableConfig = configSystem.getTableConfig('vti-compliance');
+                const tableElement = generator.generateTable(tableConfig);
+                
+                allPassed &= logTest(
+                    'Test 3: Generate Single Table',
+                    tableElement !== null && document.getElementById('vti-compliance') !== null,
+                    'VTI Compliance table generated successfully'
+                );
+            } catch (error) {
+                allPassed &= logTest(
+                    'Test 3: Generate Single Table',
+                    false,
+                    `Error: ${error.message}`
+                );
+            }
+
+            // Test 4: Generate table header with default columns
+            try {
+                const configSystem = new TableConfigSystem();
+                await configSystem.loadConfig();
+                const generator = new DynamicTableGenerator(configSystem);
+                
+                const thead = generator.generateTableHeader(null);
+                const headers = thead.querySelectorAll('th');
+                
+                allPassed &= logTest(
+                    'Test 4: Generate Table Header (Default Columns)',
+                    headers.length === 7, // Rank + 5 default columns + Actions
+                    `Generated ${headers.length} header columns (expected 7)`
+                );
+            } catch (error) {
+                allPassed &= logTest(
+                    'Test 4: Generate Table Header (Default Columns)',
+                    false,
+                    `Error: ${error.message}`
+                );
+            }
+
+            // Test 5: Generate control buttons
+            try {
+                const configSystem = new TableConfigSystem();
+                await configSystem.loadConfig();
+                const generator = new DynamicTableGenerator(configSystem);
+                
+                const tableConfig = configSystem.getTableConfig('vti-compliance');
+                const controls = generator.generateControlButtons(tableConfig);
+                const buttons = controls.querySelectorAll('button');
+                
+                allPassed &= logTest(
+                    'Test 5: Generate Control Buttons',
+                    buttons.length === 5, // Clear, Benchmark, Export Excel, Export CSV, Backup
+                    `Generated ${buttons.length} control buttons (expected 5)`
+                );
+            } catch (error) {
+                allPassed &= logTest(
+                    'Test 5: Generate Control Buttons',
+                    false,
+                    `Error: ${error.message}`
+                );
+            }
+
+            // Test 6: Apply table styling
+            try {
+                const configSystem = new TableConfigSystem();
+                await configSystem.loadConfig();
+                const generator = new DynamicTableGenerator(configSystem);
+                
+                const section = document.createElement('section');
+                section.innerHTML = '<h2 class="table-title">Test</h2><div class="table-container"></div>';
+                generator.applyTableStyling(section, '#FF9900');
+                
+                const hasColor = section.style.getPropertyValue('--table-accent-color') === '#FF9900';
+                
+                allPassed &= logTest(
+                    'Test 6: Apply Table Styling',
+                    hasColor,
+                    'Color theme applied successfully'
+                );
+            } catch (error) {
+                allPassed &= logTest(
+                    'Test 6: Apply Table Styling',
+                    false,
+                    `Error: ${error.message}`
+                );
+            }
+
+            // Test 7: Remove table
+            try {
+                const configSystem = new TableConfigSystem();
+                await configSystem.loadConfig();
+                const generator = new DynamicTableGenerator(configSystem);
+                
+                // First generate a table
+                const tableConfig = configSystem.getTableConfig('vti-dpmo');
+                generator.generateTable(tableConfig);
+                
+                // Then remove it
+                generator.removeTable('vti-dpmo');
+                
+                const removed = document.querySelector('[data-table-id="vti-dpmo"]') === null;
+                
+                allPassed &= logTest(
+                    'Test 7: Remove Table',
+                    removed,
+                    'Table removed from DOM successfully'
+                );
+            } catch (error) {
+                allPassed &= logTest(
+                    'Test 7: Remove Table',
+                    false,
+                    `Error: ${error.message}`
+                );
+            }
+
+            // Test 8: Refresh table
+            try {
+                const configSystem = new TableConfigSystem();
+                await configSystem.loadConfig();
+                const generator = new DynamicTableGenerator(configSystem);
+                
+                // Generate initial table
+                const tableConfig = configSystem.getTableConfig('ta-idle-time');
+                generator.generateTable(tableConfig);
+                
+                // Refresh it
+                generator.refreshTable('ta-idle-time');
+                
+                const exists = document.querySelector('[data-table-id="ta-idle-time"]') !== null;
+                
+                allPassed &= logTest(
+                    'Test 8: Refresh Table',
+                    exists,
+                    'Table refreshed successfully'
+                );
+            } catch (error) {
+                allPassed &= logTest(
+                    'Test 8: Refresh Table',
+                    false,
+                    `Error: ${error.message}`
+                );
+            }
+
+            // Test 9: Generate all tables
+            try {
+                // Clear container first
+                document.getElementById('tables-container').innerHTML = '';
+                
+                const configSystem = new TableConfigSystem();
+                await configSystem.loadConfig();
+                const generator = new DynamicTableGenerator(configSystem);
+                
+                generator.generateAllTables();
+                
+                const generatedTables = document.querySelectorAll('#tables-container .table-section');
+                const visibleTables = configSystem.getAllTables().filter(t => t.visible !== false);
+                
+                allPassed &= logTest(
+                    'Test 9: Generate All Tables',
+                    generatedTables.length === visibleTables.length,
+                    `Generated ${generatedTables.length} tables (expected ${visibleTables.length})`
+                );
+            } catch (error) {
+                allPassed &= logTest(
+                    'Test 9: Generate All Tables',
+                    false,
+                    `Error: ${error.message}`
+                );
+            }
+
+            // Summary
+            const summary = document.createElement('div');
+            summary.className = `test-result ${allPassed ? 'test-pass' : 'test-fail'}`;
+            summary.innerHTML = `<strong>${allPassed ? '✓ All Tests Passed!' : '✗ Some Tests Failed'}</strong>`;
+            testResults.appendChild(summary);
+
+            console.log('Tests completed:', allPassed ? 'PASSED' : 'FAILED');
+        }
+
+        // Run tests when page loads
+        window.addEventListener('DOMContentLoaded', runTests);
+    </script>
+</body>
+</html>

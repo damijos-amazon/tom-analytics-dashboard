@@ -1,0 +1,198 @@
+{
+  "version": "1.0",
+  "defaultTable": "vti-compliance",
+  "tables": [
+    {
+      "tableId": "vti-compliance",
+      "tableName": "VTI Compliance",
+      "displayName": "VTI Compliance",
+      "description": "VTI compliance metrics tracking",
+      "tableBodyId": "tableBody",
+      "storageKey": "tom_analytics_data",
+      "direction": "higher",
+      "defaultBenchmark": 100,
+      "color": "#FF9900",
+      "visible": true,
+      "includeInLeaderboard": true,
+      "filePatterns": [
+        {
+          "pattern": "prior-vti",
+          "type": "exact",
+          "priority": 1
+        },
+        {
+          "pattern": "current-vti",
+          "type": "exact",
+          "priority": 1
+        },
+        {
+          "pattern": "vti",
+          "type": "contains",
+          "priority": 2,
+          "exclude": ["dpmo"]
+        }
+      ],
+      "columns": null
+    },
+    {
+      "tableId": "vti-dpmo",
+      "tableName": "VTI DPMO",
+      "displayName": "VTI DPMO",
+      "description": "VTI Defects Per Million Opportunities tracking",
+      "tableBodyId": "tableBody2",
+      "storageKey": "tom_analytics_data_2",
+      "direction": "lower",
+      "defaultBenchmark": 0,
+      "color": "#FF9900",
+      "visible": true,
+      "includeInLeaderboard": true,
+      "filePatterns": [
+        {
+          "pattern": "prior-vti-dpmo",
+          "type": "exact",
+          "priority": 1
+        },
+        {
+          "pattern": "current-vti-dpmo",
+          "type": "exact",
+          "priority": 1
+        },
+        {
+          "pattern": "vti-dpmo",
+          "type": "exact",
+          "priority": 1
+        }
+      ],
+      "columns": null
+    },
+    {
+      "tableId": "ta-idle-time",
+      "tableName": "TA Idle Time",
+      "displayName": "TA Idle Time",
+      "description": "Transportation Associate idle time tracking in minutes",
+      "tableBodyId": "tableBody3",
+      "storageKey": "tom_analytics_data_3",
+      "direction": "lower",
+      "defaultBenchmark": 5.0,
+      "color": "#FF9900",
+      "visible": true,
+      "includeInLeaderboard": true,
+      "filePatterns": [
+        {
+          "pattern": "prior-ta-idle-time",
+          "type": "exact",
+          "priority": 1
+        },
+        {
+          "pattern": "current-ta-idle-time",
+          "type": "exact",
+          "priority": 1
+        },
+        {
+          "pattern": "ta-idle-time",
+          "type": "exact",
+          "priority": 1
+        }
+      ],
+      "columns": null
+    },
+    {
+      "tableId": "seal-validation",
+      "tableName": "Seal Validation Accuracy",
+      "displayName": "Seal Validation Accuracy %",
+      "description": "Seal validation accuracy percentage tracking",
+      "tableBodyId": "tableBody4",
+      "storageKey": "tom_analytics_data_4",
+      "direction": "higher",
+      "defaultBenchmark": 100,
+      "color": "#FF9900",
+      "visible": true,
+      "includeInLeaderboard": true,
+      "filePatterns": [
+        {
+          "pattern": "prior-seal-validation",
+          "type": "exact",
+          "priority": 1
+        },
+        {
+          "pattern": "current-seal-validation",
+          "type": "exact",
+          "priority": 1
+        },
+        {
+          "pattern": "seal-validation",
+          "type": "exact",
+          "priority": 1
+        }
+      ],
+      "columns": null
+    },
+    {
+      "tableId": "ppo-compliance",
+      "tableName": "PPO Compliance",
+      "displayName": "PPO Compliance",
+      "description": "PPO compliance violations tracking",
+      "tableBodyId": "tableBody5",
+      "storageKey": "tom_analytics_data_5",
+      "direction": "lower",
+      "defaultBenchmark": 0,
+      "color": "#FF9900",
+      "visible": true,
+      "includeInLeaderboard": true,
+      "filePatterns": [
+        {
+          "pattern": "prior-ppo-compliance",
+          "type": "exact",
+          "priority": 1
+        },
+        {
+          "pattern": "current-ppo-compliance",
+          "type": "exact",
+          "priority": 1
+        },
+        {
+          "pattern": "ppo-compliance",
+          "type": "exact",
+          "priority": 1
+        }
+      ],
+      "columns": null
+    },
+    {
+      "tableId": "andon-response-time",
+      "tableName": "Andon Response Time",
+      "displayName": "Andon Response Time",
+      "description": "Andon response time tracking in minutes",
+      "tableBodyId": "tableBody6",
+      "storageKey": "tom_analytics_data_6",
+      "direction": "lower",
+      "defaultBenchmark": 3.0,
+      "color": "#FF9900",
+      "visible": true,
+      "includeInLeaderboard": true,
+      "filePatterns": [
+        {
+          "pattern": "prior-andon-response-time",
+          "type": "exact",
+          "priority": 1
+        },
+        {
+          "pattern": "current-andon-response-time",
+          "type": "exact",
+          "priority": 1
+        },
+        {
+          "pattern": "andon-response-time",
+          "type": "exact",
+          "priority": 1
+        },
+        {
+          "pattern": "andon",
+          "type": "contains",
+          "priority": 2
+        }
+      ],
+      "columns": null
+    }
+  ]
+}
