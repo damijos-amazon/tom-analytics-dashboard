@@ -179,8 +179,14 @@
 
         </section>
 
-        <!-- VTI Compliance Table -->
-        <section class="table-section" id="vti-compliance">
+        <!-- Dynamic Tables Container -->
+        <div id="tables-container"></div>
+
+        <!-- Section Divider -->
+        <div class="section-divider"></div>
+
+        <!-- TOM Team Leaderboard -->
+        <section class="table-section" id="leaderboard">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h2 class="table-title" style="margin: 0;">VTI Compliance</h2>
                 <button class="manual-refresh-btn" onclick="manualRefreshTable('tableBody', 'podium1')" title="Refresh Table & Podium">
@@ -1587,10 +1593,7 @@
         </div>
     </div>
 
-    <!-- Dynamic Tables Container -->
-    <div id="tables-container" style="margin-top: 40px;">
-        <!-- Dynamically generated tables will be inserted here -->
-    </div>
+
 
     <!-- SheetJS library for Excel processing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
