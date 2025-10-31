@@ -26,6 +26,9 @@ class DashboardManager {
             }
         });
         
+        // Set global dashboards object for backward compatibility
+        window.dashboards = this.dashboards;
+        
         console.log(`Initialized ${Object.keys(this.dashboards).length} dashboards`);
     }
 
@@ -56,10 +59,12 @@ class DashboardManager {
         
         // Create Dashboard instance
         // Note: TOMDashboard constructor expects (tableId, podiumId, storageKey)
-        // We'll pass the tableBodyId as tableId for now (backward compatibility)
+        // Link the podium to this dashboard
+        const podiumId = `podium_${tableConfig.tableBodyId}`;
+        
         const dashboard = new TOMDashboard(
             tableConfig.tableBodyId,
-            null, // podiumId - not used for secondary tables
+            podiumId,
             tableConfig.storageKey
         );
         
@@ -68,7 +73,9 @@ class DashboardManager {
         dashboard.direction = tableConfig.direction;
         dashboard.defaultBenchmark = tableConfig.defaultBenchmark;
         
+        // Store in both the new tableId and legacy tableBodyId for backward compatibility
         this.dashboards[tableId] = dashboard;
+        this.dashboards[tableConfig.tableBodyId] = dashboard;
         
         console.log(`Created dashboard for table: ${tableId} (${tableConfig.tableName})`);
         return dashboard;

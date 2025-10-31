@@ -179,459 +179,10 @@
 
         </section>
 
-        <!-- VTI Compliance Table -->
-        <section class="table-section" id="vti-compliance">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 class="table-title" style="margin: 0;">VTI Compliance</h2>
-                <button class="manual-refresh-btn" onclick="manualRefreshTable('tableBody', 'podium1')" title="Refresh Table & Podium">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
-                    </svg>
-                </button>
-            </div>
-            <div class="table-controls">
-                <div class="table-actions">
-                    <button class="btn btn-danger" onclick="clearData()">Clear Data</button>
-                    <button class="btn btn-secondary" onclick="openBenchmarkModal('vti-compliance')">Edit Benchmark</button>
-                    <button id="autoRefreshBtn_tableBody" class="btn btn-info" onclick="toggleAutoRefresh('tableBody')" style="transition: all 0.3s;">🔄 Auto-Refresh: <span style="color: #ccc;">OFF</span></button>
-                </div>
-                <div class="export-controls">
-                    <button class="btn btn-export" onclick="exportExcel()">Export Excel</button>
-                    <button class="btn btn-export" onclick="exportCSV()">Export CSV</button>
-                    <button class="btn btn-export" onclick="exportJSON()">Export JSON</button>
-                </div>
-            </div>
-
-            <div class="table-container">
-                <table class="compliance-table" id="complianceTable">
-                    <thead>
-                        <tr>
-                            <th>Rank</th>
-                            <th>Associate Name</th>
-                            <th>Prior Month %</th>
-                            <th>Current Month %</th>
-                            <th>Change %</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody">
-                        <!-- Table will be populated when files are uploaded -->
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- Top 3 Performers Podium -->
-        <section class="podium-section">
-            <h2 class="podium-title">Top 3 Performers</h2>
-            <div class="podium" id="podium1">
-                <div class="podium-place second">
-                    <div class="performer-avatar">
-                        <div class="avatar-circle">-</div>
-                    </div>
-                    <div class="performer-name">-</div>
-                    <div class="trophy trophy-silver">🥈</div>
-                    <div class="performer-score">- <span class="status-badge">-</span></div>
-                </div>
-                <div class="podium-place first">
-                    <div class="performer-avatar">
-                        <div class="avatar-circle">-</div>
-                    </div>
-                    <div class="performer-name">-</div>
-                    <div class="trophy trophy-gold">🏆</div>
-                    <div class="performer-score">- <span class="status-badge">-</span></div>
-                </div>
-                <div class="podium-place third">
-                    <div class="performer-avatar">
-                        <div class="avatar-circle">-</div>
-                    </div>
-                    <div class="performer-name">-</div>
-                    <div class="trophy trophy-bronze">🥉</div>
-                    <div class="performer-score">- <span class="status-badge">-</span></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Section Divider -->
-        <div class="section-divider"></div>
-
-        <!-- Table 2 -->
-        <section class="table-section" id="vti-dpmo">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 class="table-title" style="margin: 0;">VTI DPMO</h2>
-                <button class="manual-refresh-btn" onclick="manualRefreshTable('tableBody2', 'podium2')" title="Refresh Table & Podium">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
-                    </svg>
-                </button>
-            </div>
-            <div class="table-controls">
-                <div class="table-actions">
-                    <button class="btn btn-danger" onclick="clearData2()">Clear Data</button>
-                    <button class="btn btn-secondary" onclick="openBenchmarkModal('vti-dpmo')">Edit Benchmark</button>
-                    <button id="autoRefreshBtn_tableBody2" class="btn btn-info" onclick="toggleAutoRefresh('tableBody2')" style="transition: all 0.3s;">🔄 Auto-Refresh: <span style="color: #ccc;">OFF</span></button>
-                </div>
-                <div class="export-controls">
-                    <button class="btn btn-export" onclick="exportExcel2()">Export Excel</button>
-                    <button class="btn btn-export" onclick="exportCSV2()">Export CSV</button>
-                    <button class="btn btn-export" onclick="exportJSON2()">Export JSON</button>
-                </div>
-            </div>
-
-            <div class="table-container">
-                <table class="compliance-table" id="complianceTable2">
-                    <thead>
-                        <tr>
-                            <th>Rank</th>
-                            <th>Associate Name</th>
-                            <th>Prior Month</th>
-                            <th>Current Month</th>
-                            <th>Change %</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody2">
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- Top 3 Performers Podium 2 -->
-        <section class="podium-section">
-            <h2 class="podium-title">Top 3 Performers</h2>
-            <div class="podium" id="podium2">
-                <div class="podium-place second">
-                    <div class="performer-avatar">
-                        <div class="avatar-circle">-</div>
-                    </div>
-                    <div class="performer-name">-</div>
-                    <div class="trophy trophy-silver">🥈</div>
-                    <div class="performer-score">- <span class="status-badge">-</span></div>
-                </div>
-                <div class="podium-place first">
-                    <div class="performer-avatar">
-                        <div class="avatar-circle">-</div>
-                    </div>
-                    <div class="performer-name">-</div>
-                    <div class="trophy trophy-gold">🏆</div>
-                    <div class="performer-score">- <span class="status-badge">-</span></div>
-                </div>
-                <div class="podium-place third">
-                    <div class="performer-avatar">
-                        <div class="avatar-circle">-</div>
-                    </div>
-                    <div class="performer-name">-</div>
-                    <div class="trophy trophy-bronze">🥉</div>
-                    <div class="performer-score">- <span class="status-badge">-</span></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Section Divider -->
-        <div class="section-divider"></div>
-
-        <!-- Table 3 -->
-        <section class="table-section" id="ta-idle-time">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 class="table-title" style="margin: 0;">TA Idle Time</h2>
-                <button class="manual-refresh-btn" onclick="manualRefreshTable('tableBody3', 'podium3')" title="Refresh Table & Podium">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
-                    </svg>
-                </button>
-            </div>
-            <div class="table-controls">
-                <div class="table-actions">
-                    <button class="btn btn-danger" onclick="clearData3()">Clear Data</button>
-                    <button class="btn btn-secondary" onclick="openTAIdleBenchmarkModal()">Edit Benchmark</button>
-                    <button id="autoRefreshBtn_tableBody3" class="btn btn-info" onclick="toggleAutoRefresh('tableBody3')" style="transition: all 0.3s;">🔄 Auto-Refresh: <span style="color: #ccc;">OFF</span></button>
-                </div>
-                <div class="export-controls">
-                    <button class="btn btn-export" onclick="exportExcel3()">Export Excel</button>
-                    <button class="btn btn-export" onclick="exportCSV3()">Export CSV</button>
-                    <button class="btn btn-export" onclick="exportJSON3()">Export JSON</button>
-                </div>
-            </div>
-
-            <div class="table-container">
-                <table class="compliance-table" id="complianceTable3">
-                    <thead>
-                        <tr>
-                            <th>Rank</th>
-                            <th>Associate Name</th>
-                            <th>Prior Month (min)</th>
-                            <th>Current Month (min)</th>
-                            <th>Change (min)</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody3">
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- Top 3 Performers Podium 3 -->
-        <section class="podium-section">
-            <h2 class="podium-title">Top 3 Performers</h2>
-            <div class="podium" id="podium3">
-                <div class="podium-place second">
-                    <div class="performer-avatar">
-                        <div class="avatar-circle">-</div>
-                    </div>
-                    <div class="performer-name">-</div>
-                    <div class="trophy trophy-silver">🥈</div>
-                    <div class="performer-score">- <span class="status-badge">-</span></div>
-                </div>
-                <div class="podium-place first">
-                    <div class="performer-avatar">
-                        <div class="avatar-circle">-</div>
-                    </div>
-                    <div class="performer-name">-</div>
-                    <div class="trophy trophy-gold">🏆</div>
-                    <div class="performer-score">- <span class="status-badge">-</span></div>
-                </div>
-                <div class="podium-place third">
-                    <div class="performer-avatar">
-                        <div class="avatar-circle">-</div>
-                    </div>
-                    <div class="performer-name">-</div>
-                    <div class="trophy trophy-bronze">🥉</div>
-                    <div class="performer-score">- <span class="status-badge">-</span></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Section Divider -->
-        <div class="section-divider"></div>
-
-        <!-- Table 4 -->
-        <section class="table-section" id="seal-validation">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 class="table-title" style="margin: 0;">Seal Validation Accuracy %</h2>
-                <button class="manual-refresh-btn" onclick="manualRefreshTable('tableBody4', 'podium4')" title="Refresh Table & Podium">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
-                    </svg>
-                </button>
-            </div>
-            <div class="table-controls">
-                <div class="table-actions">
-                    <button class="btn btn-danger" onclick="clearData4()">Clear Data</button>
-                    <button class="btn btn-secondary" onclick="openBenchmarkModal('seal-validation')">Edit Benchmark</button>
-                    <button id="autoRefreshBtn_tableBody4" class="btn btn-info" onclick="toggleAutoRefresh('tableBody4')" style="transition: all 0.3s;">🔄 Auto-Refresh: <span style="color: #ccc;">OFF</span></button>
-                </div>
-                <div class="export-controls">
-                    <button class="btn btn-export" onclick="exportExcel4()">Export Excel</button>
-                    <button class="btn btn-export" onclick="exportCSV4()">Export CSV</button>
-                    <button class="btn btn-export" onclick="exportJSON4()">Export JSON</button>
-                </div>
-            </div>
-
-            <div class="table-container">
-                <table class="compliance-table" id="complianceTable4">
-                    <thead>
-                        <tr>
-                            <th>Rank</th>
-                            <th>Associate Name</th>
-                            <th>Prior Month %</th>
-                            <th>Current Month %</th>
-                            <th>Change %</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody4">
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- Top 3 Performers Podium 4 -->
-        <section class="podium-section">
-            <h2 class="podium-title">Top 3 Performers</h2>
-            <div class="podium" id="podium4">
-                <div class="podium-place second">
-                    <div class="performer-avatar">
-                        <div class="avatar-circle">-</div>
-                    </div>
-                    <div class="performer-name">-</div>
-                    <div class="trophy trophy-silver">🥈</div>
-                    <div class="performer-score">- <span class="status-badge">-</span></div>
-                </div>
-                <div class="podium-place first">
-                    <div class="performer-avatar">
-                        <div class="avatar-circle">-</div>
-                    </div>
-                    <div class="performer-name">-</div>
-                    <div class="trophy trophy-gold">🏆</div>
-                    <div class="performer-score">- <span class="status-badge">-</span></div>
-                </div>
-                <div class="podium-place third">
-                    <div class="performer-avatar">
-                        <div class="avatar-circle">-</div>
-                    </div>
-                    <div class="performer-name">-</div>
-                    <div class="trophy trophy-bronze">🥉</div>
-                    <div class="performer-score">- <span class="status-badge">-</span></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Section Divider -->
-        <div class="section-divider"></div>
-
-        <!-- Table 5 -->
-        <section class="table-section" id="ppo-compliance">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 class="table-title" style="margin: 0;">PPO Compliance</h2>
-                <button class="manual-refresh-btn" onclick="manualRefreshTable('tableBody5', 'podium5')" title="Refresh Table & Podium">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
-                    </svg>
-                </button>
-            </div>
-            <div class="table-controls">
-                <div class="table-actions">
-                    <button class="btn btn-danger" onclick="clearData5()">Clear Data</button>
-                    <button class="btn btn-secondary" onclick="openBenchmarkModal('ppo-compliance')">Edit Benchmark</button>
-                    <button id="autoRefreshBtn_tableBody5" class="btn btn-info" onclick="toggleAutoRefresh('tableBody5')" style="transition: all 0.3s;">🔄 Auto-Refresh: <span style="color: #ccc;">OFF</span></button>
-                </div>
-                <div class="export-controls">
-                    <button class="btn btn-export" onclick="exportExcel5()">Export Excel</button>
-                    <button class="btn btn-export" onclick="exportCSV5()">Export CSV</button>
-                    <button class="btn btn-export" onclick="exportJSON5()">Export JSON</button>
-                </div>
-            </div>
-
-            <div class="table-container">
-                <table class="compliance-table" id="complianceTable5">
-                    <thead>
-                        <tr>
-                            <th>Rank</th>
-                            <th>Associate Name</th>
-                            <th>Prior Month</th>
-                            <th>Current Month</th>
-                            <th>Change %</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody5">
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- Top 3 Performers Podium 5 -->
-        <section class="podium-section">
-            <h2 class="podium-title">Top 3 Performers</h2>
-            <div class="podium" id="podium5">
-                <div class="podium-place second">
-                    <div class="performer-avatar">
-                        <div class="avatar-circle">-</div>
-                    </div>
-                    <div class="performer-name">-</div>
-                    <div class="trophy trophy-silver">🥈</div>
-                    <div class="performer-score">- <span class="status-badge">-</span></div>
-                </div>
-                <div class="podium-place first">
-                    <div class="performer-avatar">
-                        <div class="avatar-circle">-</div>
-                    </div>
-                    <div class="performer-name">-</div>
-                    <div class="trophy trophy-gold">🏆</div>
-                    <div class="performer-score">- <span class="status-badge">-</span></div>
-                </div>
-                <div class="podium-place third">
-                    <div class="performer-avatar">
-                        <div class="avatar-circle">-</div>
-                    </div>
-                    <div class="performer-name">-</div>
-                    <div class="trophy trophy-bronze">🥉</div>
-                    <div class="performer-score">- <span class="status-badge">-</span></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Section Divider -->
-        <div class="section-divider"></div>
-
-        <!-- Table 6 -->
-        <section class="table-section" id="andon-response">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 class="table-title" style="margin: 0;">Andon Response Time</h2>
-                <button class="manual-refresh-btn" onclick="manualRefreshTable('tableBody6', 'podium6')" title="Refresh Table & Podium">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
-                    </svg>
-                </button>
-            </div>
-            <div class="table-controls">
-                <div class="table-actions">
-                    <button class="btn btn-danger" onclick="clearData6()">Clear Data</button>
-                    <button class="btn btn-secondary" onclick="openBenchmarkModal('andon-response')">Edit Benchmark</button>
-                    <button id="autoRefreshBtn_tableBody6" class="btn btn-info" onclick="toggleAutoRefresh('tableBody6')" style="transition: all 0.3s;">🔄 Auto-Refresh: <span style="color: #ccc;">OFF</span></button>
-                </div>
-                <div class="export-controls">
-                    <button class="btn btn-export" onclick="exportExcel6()">Export Excel</button>
-                    <button class="btn btn-export" onclick="exportCSV6()">Export CSV</button>
-                    <button class="btn btn-export" onclick="exportJSON6()">Export JSON</button>
-                </div>
-            </div>
-
-            <div class="table-container">
-                <table class="compliance-table" id="complianceTable6">
-                    <thead>
-                        <tr>
-                            <th>Rank</th>
-                            <th>Associate Name</th>
-                            <th>Prior Month (min)</th>
-                            <th>Current Month (min)</th>
-                            <th>Change (min)</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody6">
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- Top 3 Performers Podium 6 -->
-        <section class="podium-section">
-            <h2 class="podium-title">Top 3 Performers</h2>
-            <div class="podium" id="podium6">
-                <div class="podium-place second">
-                    <div class="performer-avatar">
-                        <div class="avatar-circle">-</div>
-                    </div>
-                    <div class="performer-name">-</div>
-                    <div class="trophy trophy-silver">🥈</div>
-                    <div class="performer-score">- <span class="status-badge">-</span></div>
-                </div>
-                <div class="podium-place first">
-                    <div class="performer-avatar">
-                        <div class="avatar-circle">-</div>
-                    </div>
-                    <div class="performer-name">-</div>
-                    <div class="trophy trophy-gold">🏆</div>
-                    <div class="performer-score">- <span class="status-badge">-</span></div>
-                </div>
-                <div class="podium-place third">
-                    <div class="performer-avatar">
-                        <div class="avatar-circle">-</div>
-                    </div>
-                    <div class="performer-name">-</div>
-                    <div class="trophy trophy-bronze">🥉</div>
-                    <div class="performer-score">- <span class="status-badge">-</span></div>
-                </div>
-            </div>
-        </section>
+        <!-- Dynamic Tables Container - All tables generated from config -->
+        <div id="tables-container">
+            <!-- Dynamically generated tables will be inserted here -->
+        </div>
 
         <!-- Section Divider -->
         <div class="section-divider"></div>
@@ -1662,18 +1213,58 @@
             }
         }
         
-        // Initialize config modal when page loads
+        // Initialize dynamic table system when page loads
         window.addEventListener('DOMContentLoaded', async function() {
-            if (typeof TableConfigSystem !== 'undefined' && typeof ConfigModal !== 'undefined') {
-                // Initialize config modal
-                const configSystem = new TableConfigSystem();
-                await configSystem.loadConfig();
-                window.configModal = new ConfigModal(configSystem, null);
-                window.configModal.createModal();
-                console.log('✅ Config modal initialized');
+            console.log('🚀 Initializing Dynamic Table System...');
+            
+            // Step 1: Initialize Table Configuration System
+            if (typeof TableConfigSystem !== 'undefined') {
+                window.configSystem = new TableConfigSystem();
+                await window.configSystem.loadConfig();
+                console.log('✅ Table Configuration System loaded');
+            } else {
+                console.error('❌ TableConfigSystem not found!');
+                return;
             }
             
-            // Initialize database integration (only if Supabase is configured)
+            // Step 2: Initialize File Routing Engine
+            if (typeof FileRoutingEngine !== 'undefined') {
+                window.fileRoutingEngine = new FileRoutingEngine(window.configSystem);
+                console.log('✅ File Routing Engine initialized');
+            } else {
+                console.error('❌ FileRoutingEngine not found!');
+            }
+            
+            // Step 3: Initialize Dynamic Table Generator
+            if (typeof DynamicTableGenerator !== 'undefined') {
+                window.tableGenerator = new DynamicTableGenerator(window.configSystem);
+                console.log('✅ Dynamic Table Generator initialized');
+            } else {
+                console.error('❌ DynamicTableGenerator not found!');
+            }
+            
+            // Step 4: Initialize Dashboard Manager
+            if (typeof DashboardManager !== 'undefined') {
+                window.dashboardManager = new DashboardManager(
+                    window.configSystem,
+                    window.tableGenerator
+                );
+                await window.dashboardManager.initializeDashboards();
+                console.log('✅ Dashboard Manager initialized with', Object.keys(window.dashboards || {}).length, 'dashboards');
+            } else {
+                console.error('❌ DashboardManager not found!');
+            }
+            
+            // Step 5: Initialize Config Modal
+            if (typeof ConfigModal !== 'undefined') {
+                window.configModal = new ConfigModal(window.configSystem, window.dashboardManager);
+                window.configModal.createModal();
+                console.log('✅ Config Modal initialized');
+            } else {
+                console.error('❌ ConfigModal not found!');
+            }
+            
+            // Step 6: Initialize database integration (only if Supabase is configured)
             const supabaseUrl = localStorage.getItem('supabase_url');
             const supabaseKey = localStorage.getItem('supabase_anon_key');
             
@@ -1690,12 +1281,6 @@
                             if (window.dashboards && Object.keys(window.dashboards).length > 0) {
                                 await integrateDatabaseWithDashboards();
                                 console.log('✅ Database integration complete');
-                                
-                                // Update config modal with dashboard manager reference
-                                if (window.configModal && window.dashboardManager) {
-                                    window.configModal.dashboardManager = window.dashboardManager;
-                                    console.log('✅ Config modal connected to dashboard manager');
-                                }
                             }
                         }, 1000);
                     }
@@ -1705,6 +1290,8 @@
             } else {
                 console.log('ℹ️ Using localStorage mode (Supabase not configured)');
             }
+            
+            console.log('🎉 Dynamic Table System fully initialized!');
         });
     </script>
 

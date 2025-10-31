@@ -3,7 +3,7 @@
  * Manages table configurations, loading, validation, and CRUD operations
  */
 class TableConfigSystem {
-    constructor(configPath = 'demo/assets/table-config.json') {
+    constructor(configPath = 'assets/table-config.json') {
         this.configPath = configPath;
         this.config = null;
         this.defaultConfig = this.getDefaultConfig();

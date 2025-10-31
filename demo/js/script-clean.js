@@ -47,19 +47,27 @@ class TOMDashboard {
     }
 
     setupEventListeners() {
-        if (this.tableId === 'tableBody') {
+        // Setup file upload listeners ONLY ONCE for the first dashboard
+        if (this.tableId === 'tableBody' && !window._fileUploadListenersSetup) {
             const fileInput = document.getElementById('fileInput');
             const uploadArea = document.getElementById('uploadArea');
             if (fileInput && uploadArea) {
                 uploadArea.addEventListener('click', () => fileInput.click());
-                fileInput.addEventListener('change', (e) => this.routeFilesToTables(e.target.files));
+                fileInput.addEventListener('change', (e) => {
+                    // Route files using the first dashboard's routing method
+                    if (window.dashboards && window.dashboards['tableBody']) {
+                        window.dashboards['tableBody'].routeFilesToTables(e.target.files);
+                    }
+                });
+                window._fileUploadListenersSetup = true;
+                console.log('✅ File upload listeners set up');
             }
         }
     }
 
     setupDragAndDrop() {
-        // Only setup file drag & drop for the first dashboard (main table)
-        if (this.tableId === 'tableBody') {
+        // Setup file drag & drop ONLY ONCE for the upload area
+        if (this.tableId === 'tableBody' && !window._dragDropListenersSetup) {
             const uploadArea = document.getElementById('uploadArea');
             if (!uploadArea) return;
 
@@ -79,8 +87,11 @@ class TOMDashboard {
                 e.preventDefault();
                 e.stopPropagation();
                 uploadArea.classList.remove('dragover');
-                console.log('Drop event triggered!', e.dataTransfer.files);
-                this.routeFilesToTables(e.dataTransfer.files);
+                console.log('🎯 Drop event triggered!', e.dataTransfer.files);
+                // Route files using the first dashboard's routing method
+                if (window.dashboards && window.dashboards['tableBody']) {
+                    window.dashboards['tableBody'].routeFilesToTables(e.dataTransfer.files);
+                }
             });
             
             // Prevent default drag/drop behavior on entire document
@@ -91,6 +102,9 @@ class TOMDashboard {
             document.addEventListener('drop', (e) => {
                 e.preventDefault();
             });
+            
+            window._dragDropListenersSetup = true;
+            console.log('✅ Drag & drop listeners set up');
         }
 
         this.setupTableDragAndDrop();

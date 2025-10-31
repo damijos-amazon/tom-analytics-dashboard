@@ -145,7 +145,16 @@ class DynamicTableGenerator {
         }
 
         this.containerElement.appendChild(section);
-        console.log(`Table ${tableConfig.tableId} generated successfully`);
+
+        // Generate podium for this table
+        this.generatePodium(tableConfig);
+
+        // Add section divider after podium
+        const divider = document.createElement('div');
+        divider.className = 'section-divider';
+        this.containerElement.appendChild(divider);
+
+        console.log(`Table ${tableConfig.tableId} generated successfully with podium`);
 
         return section;
     }
@@ -323,6 +332,58 @@ class DynamicTableGenerator {
     }
 
     /**
+     * Generate podium for table's top 3 performers
+     * @param {Object} tableConfig - Table configuration object
+     * @returns {HTMLElement} The generated podium section element
+     */
+    generatePodium(tableConfig) {
+        const podiumSection = document.createElement('section');
+        podiumSection.className = 'podium-section';
+        podiumSection.id = `podium-${tableConfig.tableId}`;
+
+        const title = document.createElement('h2');
+        title.className = 'podium-title';
+        title.textContent = 'Top 3 Performers';
+        podiumSection.appendChild(title);
+
+        const podiumContainer = document.createElement('div');
+        podiumContainer.className = 'podium';
+        podiumContainer.id = `podium_${tableConfig.tableBodyId}`;
+
+        // Create three podium places: second, first, third (visual order)
+        const places = [
+            { position: 'second', trophy: '🥈', rank: 2 },
+            { position: 'first', trophy: '🏆', rank: 1 },
+            { position: 'third', trophy: '🥉', rank: 3 }
+        ];
+
+        places.forEach(place => {
+            const placeDiv = document.createElement('div');
+            placeDiv.className = `podium-place ${place.position}`;
+
+            placeDiv.innerHTML = `
+                <div class="performer-avatar">
+                    <div class="avatar-circle">-</div>
+                </div>
+                <div class="performer-name">-</div>
+                <div class="trophy trophy-${place.position === 'first' ? 'gold' : place.position === 'second' ? 'silver' : 'bronze'}">${place.trophy}</div>
+                <div class="performer-score">- <span class="status-badge">-</span></div>
+            `;
+
+            podiumContainer.appendChild(placeDiv);
+        });
+
+        podiumSection.appendChild(podiumContainer);
+
+        // Insert into DOM
+        if (this.containerElement) {
+            this.containerElement.appendChild(podiumSection);
+        }
+
+        return podiumSection;
+    }
+
+    /**
      * Refresh table UI by regenerating from config
      * @param {string} tableId - Table identifier
      */
@@ -335,12 +396,25 @@ class DynamicTableGenerator {
             return;
         }
 
-        // Remove old table
+        // Remove old table and podium
         this.removeTable(tableId);
+        this.removePodium(tableId);
 
         // Regenerate from config
         this.generateTable(tableConfig);
         
         console.log(`Table refreshed: ${tableId}`);
+    }
+
+    /**
+     * Remove podium from DOM
+     * @param {string} tableId - Table identifier
+     */
+    removePodium(tableId) {
+        const podium = document.getElementById(`podium-${tableId}`);
+        if (podium) {
+            podium.remove();
+            console.log(`Removed podium from DOM: ${tableId}`);
+        }
     }
 }
