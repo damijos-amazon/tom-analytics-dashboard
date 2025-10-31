@@ -61,9 +61,12 @@
             <div onclick="document.getElementById('simpleEmployeeModal').style.display='block';" style="cursor: pointer; padding: 10px; background: #FF9900; border-radius: 5px; color: white; font-weight: bold; text-align: left; margin-bottom: 10px;">
                 👥 Employee Management
             </div>
-            <a href="supabase-config.html" style="display: block; cursor: pointer; padding: 10px; background: #2196F3; border-radius: 5px; color: white; font-weight: bold; text-align: left; text-decoration: none;">
+            <a href="supabase-config.html" style="display: block; cursor: pointer; padding: 10px; background: #2196F3; border-radius: 5px; color: white; font-weight: bold; text-align: left; text-decoration: none; margin-bottom: 10px;">
                 🔧 Database Configuration
             </a>
+            <div onclick="logout()" style="cursor: pointer; padding: 10px; background: #dc3545; border-radius: 5px; color: white; font-weight: bold; text-align: left;">
+                🚪 Logout
+            </div>
         </div>
     </div>
 
@@ -93,9 +96,7 @@
                         <div id="userEmail" style="color: #FFD700; font-weight: bold; font-size: 14px;"></div>
                         <div id="userRole" style="color: #FFF; font-size: 12px; opacity: 0.8;"></div>
                     </div>
-                    <button onclick="logout()" style="background: #FF9900; border: none; padding: 8px 16px; border-radius: 5px; color: white; font-weight: bold; cursor: pointer; transition: all 0.3s;">
-                        Logout
-                    </button>
+
                 </div>
             </div>
         </header>
