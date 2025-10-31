@@ -8,18 +8,6 @@
     <meta http-equiv="Expires" content="0">
     <title>TOM Analytics Dashboard - Demo</title>
     <script>
-        // Authentication check - redirect to login if not authenticated
-        (function() {
-            // Always check for authentication session
-            const sessionData = sessionStorage.getItem('supabase.auth.token');
-            
-            if (!sessionData) {
-                console.log('🔒 Not authenticated - redirecting to login');
-                window.location.href = 'login.html';
-                return;
-            }
-        })();
-        
         // Automatic cache busting - generates unique timestamp for each page load
         var cacheBuster = new Date().getTime();
         // Force reload on version change
