@@ -1713,27 +1713,42 @@
             
             if (hasAuthTokens) {
                 console.log('🔗 Processing magic link callback...');
-                // Wait longer for Supabase to process the tokens and establish session
-                await new Promise(resolve => setTimeout(resolve, 2000));
                 
-                // Force a session refresh after callback
-                const { data: { session: refreshedSession } } = await authManager.supabase.auth.refreshSession();
-                if (refreshedSession) {
-                    console.log('✅ Session established from magic link');
-                    authManager.currentUser = refreshedSession.user;
+                // Wait for Supabase to process the tokens (give it more time)
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                
+                // Try multiple times to get the session
+                let session = null;
+                for (let i = 0; i < 5; i++) {
+                    session = await authManager.getSession();
+                    if (session) {
+                        console.log('✅ Session established from magic link');
+                        break;
+                    }
+                    console.log(`Attempt ${i + 1}: Waiting for session...`);
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+                
+                if (!session) {
+                    console.error('❌ Failed to establish session after magic link');
+                    alert('Authentication failed. Please try logging in again.');
+                    window.location.href = 'login.html';
+                    return;
+                }
+            } else {
+                // Not a callback, just check for existing session
+                const session = await authManager.getSession();
+                
+                if (!session) {
+                    // Not authenticated - redirect to login
+                    console.log('User not authenticated - redirecting to login');
+                    window.location.href = 'login.html';
+                    return;
                 }
             }
             
-            // Check if user is authenticated
+            // Get final session
             const session = await authManager.getSession();
-            
-            if (!session) {
-                // Not authenticated - redirect to login
-                console.log('User not authenticated - redirecting to login');
-                window.location.href = 'login.html';
-                return;
-            }
-            
             console.log('✅ User authenticated:', session.user.email);
             
             // Initialize sync manager
