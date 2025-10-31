@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Session Timeout Test - TOM Analytics</title>
+    <link rel="stylesheet" href="css/auth-styles.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            margin: 0 0 24px 0;
+            color: #232f3e;
+        }
+        
+        .test-section {
+            margin-bottom: 32px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+        }
+        
+        .test-section h2 {
+            margin: 0 0 16px 0;
+            font-size: 18px;
+            color: #232f3e;
+        }
+        
+        .test-button {
+            padding: 12px 24px;
+            background-color: #ff9900;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-right: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .test-button:hover {
+            background-color: #ec7211;
+        }
+        
+        .test-button.secondary {
+            background-color: #545b64;
+        }
+        
+        .test-button.secondary:hover {
+            background-color: #232f3e;
+        }
+        
+        .status {
+            margin-top: 16px;
+            padding: 12px;
+            background-color: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .status.error {
+            background-color: #ffebee;
+            border-left-color: #f44336;
+        }
+        
+        .status.warning {
+            background-color: #fff3e0;
+            border-left-color: #ff9800;
+        }
+        
+        .info-box {
+            padding: 16px;
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            border-radius: 4px;
+            margin-bottom: 16px;
+        }
+        
+        .info-box p {
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .session-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+        
+        .session-info-item {
+            padding: 12px;
+            background-color: white;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .session-info-item label {
+            display: block;
+            font-size: 12px;
+            color: #879596;
+            margin-bottom: 4px;
+        }
+        
+        .session-info-item value {
+            display: block;
+            font-size: 16px;
+            font-weight: 600;
+            color: #232f3e;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔐 Session Timeout & Refresh Test</h1>
+        
+        <div class="info-box">
+            <p><strong>Test Purpose:</strong> Verify that session timeout, warning modal, and refresh functionality work correctly.</p>
+            <p><strong>Note:</strong> This is a mock test that simulates the session timeout behavior without requiring actual Supabase authentication.</p>
+        </div>
+        
+        <div class="test-section">
+            <h2>Test 1: Session Warning Modal (30 min before expiry)</h2>
+            <p>Simulates the warning modal that appears 30 minutes before session expiration.</p>
+            <button class="test-button" onclick="testSessionWarning()">Show Session Warning</button>
+            <div id="test1Status"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Test 2: Session Timeout (8 hours)</h2>
+            <p>Simulates the automatic logout that occurs after 8 hours of inactivity.</p>
+            <button class="test-button" onclick="testSessionTimeout()">Simulate Session Timeout (5 sec)</button>
+            <div id="test2Status"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Test 3: Session Refresh</h2>
+            <p>Tests the session refresh functionality that extends the session.</p>
+            <button class="test-button" onclick="testSessionRefresh()">Test Session Refresh</button>
+            <div id="test3Status"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Test 4: Full Session Lifecycle</h2>
+            <p>Tests the complete session lifecycle with accelerated timing (warning at 3 sec, timeout at 5 sec).</p>
+            <button class="test-button" onclick="testFullLifecycle()">Start Full Lifecycle Test</button>
+            <button class="test-button secondary" onclick="cancelLifecycleTest()">Cancel Test</button>
+            <div id="test4Status"></div>
+            
+            <div class="session-info" id="sessionInfo" style="display: none;">
+                <div class="session-info-item">
+                    <label>Session Start</label>
+                    <value id="sessionStart">--</value>
+                </div>
+                <div class="session-info-item">
+                    <label>Warning Time</label>
+                    <value id="warningTime">--</value>
+                </div>
+                <div class="session-info-item">
+                    <label>Expiry Time</label>
+                    <value id="expiryTime">--</value>
+                </div>
+                <div class="session-info-item">
+                    <label>Time Remaining</label>
+                    <value id="timeRemaining">--</value>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="js/auth-service.js"></script>
+    <script>
+        // Mock AuthService for testing
+        class MockAuthService {
+            constructor() {
+                this.currentUser = { id: 'test-user', email: 'test@example.com', role: 'manager' };
+                this.session = { expires_at: new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString() };
+                this.sessionTimeoutId = null;
+                this.sessionWarningId = null;
+            }
+            
+            showSessionWarning() {
+                const existingModal = document.getElementById('sessionWarningModal');
+                if (existingModal) {
+                    existingModal.remove();
+                }
+                
+                const modal = document.createElement('div');
+                modal.id = 'sessionWarningModal';
+                modal.className = 'session-warning-modal';
+                modal.innerHTML = `
+                    <div class="modal-overlay"></div>
+                    <div class="modal-content">
+                        <h3>Session Expiring Soon</h3>
+                        <p>Your session will expire in 30 minutes. Would you like to stay logged in?</p>
+                        <div class="modal-buttons">
+                            <button id="stayLoggedIn" class="btn-primary">Stay Logged In</button>
+                            <button id="logoutNow" class="btn-secondary">Logout</button>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                
+                document.getElementById('stayLoggedIn').addEventListener('click', async () => {
+                    await this.refreshSession();
+                    modal.remove();
+                    showStatus('test1Status', 'Session refreshed successfully!', 'success');
+                });
+                
+                document.getElementById('logoutNow').addEventListener('click', async () => {
+                    modal.remove();
+                    showStatus('test1Status', 'User chose to logout', 'warning');
+                });
+            }
+            
+            async refreshSession() {
+                this.session = { expires_at: new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString() };
+                console.log('Session refreshed');
+            }
+            
+            setupSessionTimeout(warningDelay = 3000, timeoutDelay = 5000) {
+                if (this.sessionWarningId) clearTimeout(this.sessionWarningId);
+                if (this.sessionTimeoutId) clearTimeout(this.sessionTimeoutId);
+                
+                this.sessionWarningId = setTimeout(() => {
+                    this.showSessionWarning();
+                    showStatus('test4Status', 'Warning modal displayed!', 'warning');
+                }, warningDelay);
+                
+                this.sessionTimeoutId = setTimeout(() => {
+                    showStatus('test4Status', 'Session expired - user would be logged out', 'error');
+                }, timeoutDelay);
+            }
+            
+            clearTimeouts() {
+                if (this.sessionWarningId) clearTimeout(this.sessionWarningId);
+                if (this.sessionTimeoutId) clearTimeout(this.sessionTimeoutId);
+            }
+        }
+        
+        const mockAuth = new MockAuthService();
+        let lifecycleInterval = null;
+        
+        function showStatus(elementId, message, type = 'success') {
+            const statusDiv = document.getElementById(elementId);
+            statusDiv.innerHTML = `<div class="status ${type === 'error' ? 'error' : type === 'warning' ? 'warning' : ''}">${message}</div>`;
+        }
+        
+        function testSessionWarning() {
+            mockAuth.showSessionWarning();
+            showStatus('test1Status', 'Session warning modal displayed. Click "Stay Logged In" or "Logout" to test the buttons.', 'success');
+        }
+        
+        function testSessionTimeout() {
+            showStatus('test2Status', 'Simulating session timeout in 5 seconds...', 'warning');
+            setTimeout(() => {
+                showStatus('test2Status', 'Session expired! User would be redirected to login page.', 'error');
+            }, 5000);
+        }
+        
+        function testSessionRefresh() {
+            mockAuth.refreshSession().then(() => {
+                showStatus('test3Status', 'Session refreshed successfully! New expiry time: ' + new Date(mockAuth.session.expires_at).toLocaleTimeString(), 'success');
+            });
+        }
+        
+        function testFullLifecycle() {
+            const sessionInfo = document.getElementById('sessionInfo');
+            sessionInfo.style.display = 'grid';
+            
+            const startTime = Date.now();
+            const warningTime = startTime + 3000;
+            const expiryTime = startTime + 5000;
+            
+            document.getElementById('sessionStart').textContent = new Date(startTime).toLocaleTimeString();
+            document.getElementById('warningTime').textContent = new Date(warningTime).toLocaleTimeString();
+            document.getElementById('expiryTime').textContent = new Date(expiryTime).toLocaleTimeString();
+            
+            showStatus('test4Status', 'Session lifecycle started. Warning in 3 seconds, timeout in 5 seconds.', 'success');
+            
+            mockAuth.setupSessionTimeout(3000, 5000);
+            
+            lifecycleInterval = setInterval(() => {
+                const remaining = Math.max(0, expiryTime - Date.now());
+                const seconds = Math.floor(remaining / 1000);
+                document.getElementById('timeRemaining').textContent = seconds + 's';
+                
+                if (remaining === 0) {
+                    clearInterval(lifecycleInterval);
+                }
+            }, 100);
+        }
+        
+        function cancelLifecycleTest() {
+            mockAuth.clearTimeouts();
+            if (lifecycleInterval) {
+                clearInterval(lifecycleInterval);
+            }
+            document.getElementById('sessionInfo').style.display = 'none';
+            showStatus('test4Status', 'Lifecycle test cancelled.', 'warning');
+        }
+    </script>
+</body>
+</html>

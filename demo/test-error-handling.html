@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error Handler Test - TOM Analytics</title>
+    <link rel="stylesheet" href="css/error-handler.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            padding-top: 80px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .test-section {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .test-section h2 {
+            color: #333;
+            margin-bottom: 16px;
+            font-size: 20px;
+        }
+
+        .test-section p {
+            color: #666;
+            margin-bottom: 16px;
+            line-height: 1.6;
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #138496;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 6px;
+            border-left: 4px solid #007bff;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .log-output {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 16px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 16px;
+        }
+
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 4px 0;
+            border-bottom: 1px solid #333;
+        }
+
+        .log-time {
+            color: #858585;
+            margin-right: 8px;
+        }
+
+        .log-error {
+            color: #f48771;
+        }
+
+        .log-success {
+            color: #89d185;
+        }
+
+        .log-info {
+            color: #4fc1ff;
+        }
+
+        .code-block {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            margin: 12px 0;
+            border-left: 3px solid #007bff;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin: 12px 0;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛡️ Error Handler Test Suite</h1>
+        <p class="subtitle">Test global error handling, retry logic, and offline queue functionality</p>
+
+        <!-- Test Section 1: Basic Error Handling -->
+        <div class="test-section">
+            <h2>1. Basic Error Handling</h2>
+            <p>Test different types of errors and verify user-friendly messages are displayed.</p>
+            
+            <div class="button-group">
+                <button class="btn-danger" onclick="testNetworkError()">Network Error</button>
+                <button class="btn-danger" onclick="testAuthError()">Auth Error</button>
+                <button class="btn-danger" onclick="testPermissionError()">Permission Error</button>
+                <button class="btn-danger" onclick="testValidationError()">Validation Error</button>
+                <button class="btn-danger" onclick="testGenericError()">Generic Error</button>
+                <button class="btn-danger" onclick="testUnhandledRejection()">Unhandled Promise</button>
+            </div>
+
+            <div class="alert alert-info">
+                <strong>Expected:</strong> Each button should display a user-friendly error toast with appropriate messaging.
+            </div>
+        </div>
+
+        <!-- Test Section 2: Retry Logic -->
+        <div class="test-section">
+            <h2>2. Retry Logic</h2>
+            <p>Test automatic retry functionality for network errors.</p>
+            
+            <div class="button-group">
+                <button class="btn-warning" onclick="testRetrySuccess()">Retry Success (2nd attempt)</button>
+                <button class="btn-warning" onclick="testRetryFailure()">Retry Failure (all attempts)</button>
+                <button class="btn-warning" onclick="testRetryWithBackoff()">Retry with Backoff</button>
+            </div>
+
+            <div class="alert alert-info">
+                <strong>Expected:</strong> Operations should retry automatically with exponential backoff. Check console for retry attempts.
+            </div>
+        </div>
+
+        <!-- Test Section 3: Offline Queue -->
+        <div class="test-section">
+            <h2>3. Offline Queue</h2>
+            <p>Test action queuing when offline and auto-sync when connection is restored.</p>
+            
+            <div class="button-group">
+                <button class="btn-info" onclick="simulateOffline()">Simulate Offline</button>
+                <button class="btn-success" onclick="simulateOnline()">Simulate Online</button>
+                <button class="btn-primary" onclick="queueAction()">Queue Action</button>
+                <button class="btn-primary" onclick="queueMultipleActions()">Queue 5 Actions</button>
+                <button class="btn-secondary" onclick="viewQueue()">View Queue</button>
+            </div>
+
+            <div class="alert alert-warning">
+                <strong>Note:</strong> Simulating offline will trigger the connection status bar. Queued actions will auto-sync when you simulate going back online.
+            </div>
+        </div>
+
+        <!-- Test Section 4: Connection Status -->
+        <div class="test-section">
+            <h2>4. Connection Status Indicator</h2>
+            <p>Test the connection status bar that appears at the top of the page.</p>
+            
+            <div class="button-group">
+                <button class="btn-danger" onclick="showOfflineStatus()">Show Offline Status</button>
+                <button class="btn-success" onclick="showOnlineStatus()">Show Online Status</button>
+                <button class="btn-warning" onclick="showReconnectingStatus()">Show Reconnecting</button>
+                <button class="btn-secondary" onclick="hideStatus()">Hide Status</button>
+            </div>
+        </div>
+
+        <!-- Test Section 5: Toast Notifications -->
+        <div class="test-section">
+            <h2>5. Toast Notifications</h2>
+            <p>Test different types of toast notifications.</p>
+            
+            <div class="button-group">
+                <button class="btn-danger" onclick="showErrorToast()">Error Toast</button>
+                <button class="btn-success" onclick="showSuccessToast()">Success Toast</button>
+                <button class="btn-info" onclick="showInfoToast()">Info Toast</button>
+                <button class="btn-primary" onclick="showMultipleToasts()">Multiple Toasts</button>
+            </div>
+        </div>
+
+        <!-- Test Section 6: Integration Examples -->
+        <div class="test-section">
+            <h2>6. Integration Examples</h2>
+            <p>Test error handling integration with simulated service calls.</p>
+            
+            <div class="button-group">
+                <button class="btn-primary" onclick="testDatabaseSave()">Database Save</button>
+                <button class="btn-primary" onclick="testDatabaseLoad()">Database Load</button>
+                <button class="btn-primary" onclick="testAuthLogin()">Auth Login</button>
+                <button class="btn-primary" onclick="testBatchOperation()">Batch Operation</button>
+            </div>
+
+            <div class="code-block">
+                // Example: Wrapping a database call<br>
+                await errorHandler.queueAction(<br>
+                &nbsp;&nbsp;async () => await db.save(data),<br>
+                &nbsp;&nbsp;{ context: 'Save Data', maxRetries: 3 }<br>
+                );
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="test-section">
+            <h2>7. Error Statistics</h2>
+            <p>View current error handler statistics.</p>
+            
+            <button class="btn-secondary" onclick="updateStats()">Refresh Stats</button>
+            <button class="btn-danger" onclick="clearQueues()">Clear All Queues</button>
+            
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Errors</div>
+                    <div class="stat-value" id="totalErrors">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Queued Actions</div>
+                    <div class="stat-value" id="queuedActions">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Connection Status</div>
+                    <div class="stat-value" id="connectionStatus">Online</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Sync Status</div>
+                    <div class="stat-value" id="syncStatus">Idle</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Console Log -->
+        <div class="test-section">
+            <h2>8. Activity Log</h2>
+            <button class="btn-secondary" onclick="clearLog()">Clear Log</button>
+            <div class="log-output" id="logOutput">
+                <div class="log-entry log-info">
+                    <span class="log-time">[Ready]</span>
+                    Error handler initialized and ready for testing
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load Scripts -->
+    <script src="js/error-handler.js"></script>
+    <script src="js/connection-status.js"></script>
+    <script src="js/error-handler-integration.js"></script>
+
+    <!-- Test Scripts -->
+    <script>
+        // Initialize
+        const errorHandler = window.errorHandler;
+        const connectionStatus = window.connectionStatus;
+
+        // Logging helper
+        function addLog(message, type = 'info') {
+            const logOutput = document.getElementById('logOutput');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            
+            const time = new Date().toLocaleTimeString();
+            entry.innerHTML = `<span class="log-time">[${time}]</span>${message}`;
+            
+            logOutput.appendChild(entry);
+            logOutput.scrollTop = logOutput.scrollHeight;
+        }
+
+        // Test 1: Basic Errors
+        function testNetworkError() {
+            addLog('Testing network error...', 'info');
+            errorHandler.handleError(new Error('Failed to fetch'), 'Network Test');
+        }
+
+        function testAuthError() {
+            addLog('Testing auth error...', 'info');
+            errorHandler.handleError(new Error('Invalid credentials'), 'Authentication');
+        }
+
+        function testPermissionError() {
+            addLog('Testing permission error...', 'info');
+            errorHandler.handleError(new Error('Permission denied'), 'Authorization');
+        }
+
+        function testValidationError() {
+            addLog('Testing validation error...', 'info');
+            errorHandler.handleError(new Error('Validation failed: invalid email'), 'Form Validation');
+        }
+
+        function testGenericError() {
+            addLog('Testing generic error...', 'info');
+            errorHandler.handleError(new Error('Something went wrong'), 'Generic Test');
+        }
+
+        function testUnhandledRejection() {
+            addLog('Testing unhandled promise rejection...', 'info');
+            Promise.reject(new Error('Unhandled promise rejection test'));
+        }
+
+        // Test 2: Retry Logic
+        let retryAttempt = 0;
+        async function testRetrySuccess() {
+            addLog('Testing retry with success on 2nd attempt...', 'info');
+            retryAttempt = 0;
+            
+            try {
+                await errorHandler.queueAction(
+                    async () => {
+                        retryAttempt++;
+                        addLog(`Retry attempt ${retryAttempt}`, 'info');
+                        if (retryAttempt < 2) {
+                            throw new Error('Network error - will retry');
+                        }
+                        return 'Success!';
+                    },
+                    { context: 'Retry Test', maxRetries: 3, retryDelay: 1000 }
+                );
+                addLog('Retry test succeeded!', 'success');
+            } catch (error) {
+                addLog(`Retry test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testRetryFailure() {
+            addLog('Testing retry with all attempts failing...', 'info');
+            
+            try {
+                await errorHandler.queueAction(
+                    async () => {
+                        throw new Error('Network error - persistent failure');
+                    },
+                    { context: 'Retry Failure Test', maxRetries: 3, retryDelay: 500 }
+                );
+            } catch (error) {
+                addLog('All retry attempts exhausted (expected)', 'error');
+            }
+        }
+
+        async function testRetryWithBackoff() {
+            addLog('Testing retry with exponential backoff...', 'info');
+            let attempt = 0;
+            
+            try {
+                await errorHandler.queueAction(
+                    async () => {
+                        attempt++;
+                        const delay = 500 * attempt;
+                        addLog(`Attempt ${attempt} - next retry in ${delay}ms`, 'info');
+                        throw new Error('Network error');
+                    },
+                    { context: 'Backoff Test', maxRetries: 3, retryDelay: 500 }
+                );
+            } catch (error) {
+                addLog('Backoff test completed', 'info');
+            }
+        }
+
+        // Test 3: Offline Queue
+        function simulateOffline() {
+            addLog('Simulating offline mode...', 'warning');
+            Object.defineProperty(navigator, 'onLine', {
+                writable: true,
+                value: false
+            });
+            window.dispatchEvent(new Event('offline'));
+            updateStats();
+        }
+
+        function simulateOnline() {
+            addLog('Simulating online mode...', 'success');
+            Object.defineProperty(navigator, 'onLine', {
+                writable: true,
+                value: true
+            });
+            window.dispatchEvent(new Event('online'));
+            updateStats();
+        }
+
+        async function queueAction() {
+            addLog('Queuing action...', 'info');
+            
+            try {
+                await errorHandler.queueAction(
+                    async () => {
+                        addLog('Executing queued action', 'info');
+                        return 'Action completed';
+                    },
+                    { context: 'Queued Action', maxRetries: 3 }
+                );
+                addLog('Action completed successfully', 'success');
+            } catch (error) {
+                addLog(`Action queued for later: ${error.message}`, 'warning');
+            }
+            
+            updateStats();
+        }
+
+        async function queueMultipleActions() {
+            addLog('Queuing 5 actions...', 'info');
+            
+            for (let i = 1; i <= 5; i++) {
+                try {
+                    await errorHandler.queueAction(
+                        async () => {
+                            addLog(`Executing action ${i}`, 'info');
+                            return `Action ${i} completed`;
+                        },
+                        { context: `Batch Action ${i}`, maxRetries: 2 }
+                    );
+                } catch (error) {
+                    addLog(`Action ${i} queued`, 'warning');
+                }
+            }
+            
+            updateStats();
+        }
+
+        function viewQueue() {
+            const stats = errorHandler.getErrorStats();
+            addLog(`Queue contains ${stats.queuedActions} action(s)`, 'info');
+            addLog(`Error log contains ${stats.totalErrors} error(s)`, 'info');
+            console.log('Full stats:', stats);
+        }
+
+        // Test 4: Connection Status
+        function showOfflineStatus() {
+            connectionStatus.showStatus('offline', 'No internet connection', 'Changes will be saved locally');
+            addLog('Showing offline status', 'warning');
+        }
+
+        function showOnlineStatus() {
+            connectionStatus.showStatus('online', 'Back online', 'All data synced');
+            addLog('Showing online status', 'success');
+            setTimeout(() => connectionStatus.hideStatus(), 3000);
+        }
+
+        function showReconnectingStatus() {
+            connectionStatus.showStatus('reconnecting', 'Reconnecting...', 'Syncing queued actions');
+            addLog('Showing reconnecting status', 'info');
+        }
+
+        function hideStatus() {
+            connectionStatus.hideStatus();
+            addLog('Status hidden', 'info');
+        }
+
+        // Test 5: Toasts
+        function showErrorToast() {
+            errorHandler.showErrorToast('This is a test error message');
+            addLog('Error toast displayed', 'error');
+        }
+
+        function showSuccessToast() {
+            errorHandler.showSuccessMessage('Operation completed successfully!');
+            addLog('Success toast displayed', 'success');
+        }
+
+        function showInfoToast() {
+            errorHandler.showInfoToast('This is an informational message');
+            addLog('Info toast displayed', 'info');
+        }
+
+        function showMultipleToasts() {
+            errorHandler.showErrorToast('Error message 1');
+            setTimeout(() => errorHandler.showSuccessMessage('Success message'), 500);
+            setTimeout(() => errorHandler.showInfoToast('Info message'), 1000);
+            addLog('Multiple toasts displayed', 'info');
+        }
+
+        // Test 6: Integration
+        async function testDatabaseSave() {
+            addLog('Testing database save with error handling...', 'info');
+            
+            try {
+                await errorHandler.queueAction(
+                    async () => {
+                        // Simulate database save
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                        if (Math.random() > 0.7) {
+                            throw new Error('Database connection failed');
+                        }
+                        return { id: 123, saved: true };
+                    },
+                    { context: 'Database Save', maxRetries: 3, retryDelay: 1000 }
+                );
+                addLog('Database save successful', 'success');
+            } catch (error) {
+                addLog(`Database save failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testDatabaseLoad() {
+            addLog('Testing database load with error handling...', 'info');
+            
+            try {
+                await errorHandler.queueAction(
+                    async () => {
+                        await new Promise(resolve => setTimeout(resolve, 300));
+                        return { data: [1, 2, 3] };
+                    },
+                    { context: 'Database Load', maxRetries: 2 }
+                );
+                addLog('Database load successful', 'success');
+            } catch (error) {
+                addLog(`Database load failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAuthLogin() {
+            addLog('Testing auth login with error handling...', 'info');
+            
+            try {
+                const result = await errorHandler.queueAction(
+                    async () => {
+                        await new Promise(resolve => setTimeout(resolve, 400));
+                        if (Math.random() > 0.8) {
+                            throw new Error('Invalid credentials');
+                        }
+                        return { user: 'test@example.com', token: 'abc123' };
+                    },
+                    { context: 'Authentication', maxRetries: 1 }
+                );
+                addLog('Login successful', 'success');
+            } catch (error) {
+                addLog(`Login failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testBatchOperation() {
+            addLog('Testing batch operation...', 'info');
+            
+            const items = [1, 2, 3, 4, 5];
+            let successCount = 0;
+            let errorCount = 0;
+            
+            for (const item of items) {
+                try {
+                    await errorHandler.queueAction(
+                        async () => {
+                            await new Promise(resolve => setTimeout(resolve, 200));
+                            if (Math.random() > 0.7) {
+                                throw new Error(`Item ${item} failed`);
+                            }
+                            return item;
+                        },
+                        { context: `Batch Item ${item}`, maxRetries: 2, retryDelay: 500 }
+                    );
+                    successCount++;
+                } catch (error) {
+                    errorCount++;
+                }
+            }
+            
+            addLog(`Batch complete: ${successCount} succeeded, ${errorCount} failed`, 'info');
+        }
+
+        // Test 7: Statistics
+        function updateStats() {
+            const stats = errorHandler.getErrorStats();
+            const connStatus = connectionStatus.getStatus();
+            
+            document.getElementById('totalErrors').textContent = stats.totalErrors;
+            document.getElementById('queuedActions').textContent = stats.queuedActions;
+            document.getElementById('connectionStatus').textContent = connStatus.isOnline ? 'Online' : 'Offline';
+            document.getElementById('syncStatus').textContent = connStatus.syncInProgress ? 'Syncing' : 'Idle';
+            
+            addLog('Statistics updated', 'info');
+        }
+
+        function clearQueues() {
+            errorHandler.clearErrorQueue();
+            errorHandler.clearRetryQueue();
+            addLog('All queues cleared', 'success');
+            updateStats();
+        }
+
+        // Test 8: Log
+        function clearLog() {
+            document.getElementById('logOutput').innerHTML = '';
+            addLog('Log cleared', 'info');
+        }
+
+        // Auto-update stats every 5 seconds
+        setInterval(updateStats, 5000);
+
+        // Listen for connection restored event
+        window.addEventListener('connection-restored', (event) => {
+            addLog(`Connection restored! Synced ${event.detail.queuedActions} action(s)`, 'success');
+            updateStats();
+        });
+
+        // Initial stats
+        updateStats();
+    </script>
+</body>
+</html>

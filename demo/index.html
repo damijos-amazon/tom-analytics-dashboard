@@ -57,9 +57,12 @@
             <div onclick="openCertificateModalV2()" style="cursor: pointer; padding: 10px; background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); border: 2px solid #FF9900; border-radius: 5px; color: #232F3E; font-weight: bold; text-align: left; margin-bottom: 10px; box-shadow: 0 4px 15px rgba(255,215,0,0.4);">
                 🏆 Achievement Certificates
             </div>
-            <div onclick="document.getElementById('simpleEmployeeModal').style.display='block';" style="cursor: pointer; padding: 10px; background: #FF9900; border-radius: 5px; color: white; font-weight: bold; text-align: left;">
+            <div onclick="document.getElementById('simpleEmployeeModal').style.display='block';" style="cursor: pointer; padding: 10px; background: #FF9900; border-radius: 5px; color: white; font-weight: bold; text-align: left; margin-bottom: 10px;">
                 👥 Employee Management
             </div>
+            <a href="supabase-config.html" style="display: block; cursor: pointer; padding: 10px; background: #2196F3; border-radius: 5px; color: white; font-weight: bold; text-align: left; text-decoration: none;">
+                🔧 Database Configuration
+            </a>
         </div>
     </div>
 
@@ -81,6 +84,19 @@
             </div>
             <h1 class="title">TOM Analytics Dashboard</h1>
             <h2 class="subtitle">Employee Recognition & Appreciation System</h2>
+            
+            <!-- User Info Section (shown when authenticated) -->
+            <div id="userInfoSection" style="display: none; position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 8px; backdrop-filter: blur(10px);">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="text-align: right;">
+                        <div id="userEmail" style="color: #FFD700; font-weight: bold; font-size: 14px;"></div>
+                        <div id="userRole" style="color: #FFF; font-size: 12px; opacity: 0.8;"></div>
+                    </div>
+                    <button onclick="logout()" style="background: #FF9900; border: none; padding: 8px 16px; border-radius: 5px; color: white; font-weight: bold; cursor: pointer; transition: all 0.3s;">
+                        Logout
+                    </button>
+                </div>
+            </div>
         </header>
 
         <!-- File Upload Section -->
@@ -1584,6 +1600,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <!-- html2pdf for PDF generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <!-- Supabase for authentication and database -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Dynamic cache busting - automatically loads latest files -->
     <script>document.write('<script src="js/script-clean.js?v=' + cacheBuster + '"><\/script>');</script>
     <script>document.write('<script src="js/benchmark-modal.js?v=' + cacheBuster + '"><\/script>');</script>
@@ -1608,13 +1627,62 @@
     <script>document.write('<script src="js/dashboard-manager.js?v=' + cacheBuster + '"><\/script>');</script>
     <script>document.write('<script src="js/config-modal.js?v=' + cacheBuster + '"><\/script>');</script>
     
+    <!-- Database Integration -->
+    <script>document.write('<script src="js/auth-service.js?v=' + cacheBuster + '"><\/script>');</script>
+    <script>document.write('<script src="js/database-service.js?v=' + cacheBuster + '"><\/script>');</script>
+    <script>document.write('<script src="js/dashboard-database-adapter.js?v=' + cacheBuster + '"><\/script>');</script>
+    <script>document.write('<script src="js/dashboard-init.js?v=' + cacheBuster + '"><\/script>');</script>
+    
     <!-- Initialize Config Modal -->
     <script>
+        // Update user info display
+        function updateUserInfoDisplay() {
+            const userInfoSection = document.getElementById('userInfoSection');
+            const userEmail = document.getElementById('userEmail');
+            const userRole = document.getElementById('userRole');
+            
+            if (typeof isAuthenticated === 'function' && isAuthenticated()) {
+                const user = getCurrentUser();
+                if (user) {
+                    userEmail.textContent = user.email;
+                    userRole.textContent = user.role.replace('_', ' ').toUpperCase();
+                    userInfoSection.style.display = 'block';
+                }
+            } else {
+                userInfoSection.style.display = 'none';
+            }
+        }
+        
         // Initialize config modal when page loads
-        window.addEventListener('DOMContentLoaded', function() {
+        window.addEventListener('DOMContentLoaded', async function() {
             if (typeof TableConfigSystem !== 'undefined' && typeof DashboardManager !== 'undefined') {
                 // These will be initialized by the main application
                 console.log('Config modal system loaded');
+            }
+            
+            // Initialize database integration
+            if (typeof initializeDashboardWithDatabase !== 'undefined') {
+                console.log('🔄 Initializing database integration...');
+                const dbInitialized = await initializeDashboardWithDatabase();
+                
+                if (dbInitialized) {
+                    console.log('✅ Database initialized successfully');
+                    
+                    // Update user info display
+                    updateUserInfoDisplay();
+                    
+                    // Wait for dashboards to be created, then integrate
+                    setTimeout(async () => {
+                        if (window.dashboards && Object.keys(window.dashboards).length > 0) {
+                            await integrateDatabaseWithDashboards();
+                            console.log('✅ Database integration complete');
+                        } else {
+                            console.log('⚠️ No dashboards found, skipping database integration');
+                        }
+                    }, 1000);
+                } else {
+                    console.log('⚠️ Database not initialized, using localStorage mode');
+                }
             }
         });
     </script>

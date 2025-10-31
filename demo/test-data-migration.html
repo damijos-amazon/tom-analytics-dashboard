@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Migration Test - TOM Analytics</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .status-card {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .status-card h3 {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-card .value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .status-card .value.success {
+            color: #28a745;
+        }
+
+        .status-card .value.error {
+            color: #dc3545;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .log-container {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 5px;
+            border-left: 3px solid transparent;
+        }
+
+        .log-entry.info {
+            border-left-color: #667eea;
+        }
+
+        .log-entry.success {
+            border-left-color: #28a745;
+        }
+
+        .log-entry.error {
+            border-left-color: #dc3545;
+        }
+
+        .log-entry.warning {
+            border-left-color: #ffc107;
+        }
+
+        .data-preview {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            margin-top: 15px;
+        }
+
+        .data-preview pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 0.85em;
+        }
+
+        /* Modal Styles */
+        .migration-prompt-modal,
+        .migration-result-modal,
+        .migration-error-modal,
+        .migration-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1000;
+        }
+
+        .modal-overlay,
+        .progress-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content,
+        .progress-content {
+            position: relative;
+            background: white;
+            max-width: 600px;
+            margin: 100px auto;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            z-index: 1001;
+        }
+
+        .modal-content h3 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .modal-content.success h3 {
+            color: #28a745;
+        }
+
+        .modal-content.error h3 {
+            color: #dc3545;
+        }
+
+        .migration-details ul,
+        .error-actions ul,
+        .error-recovery ul {
+            margin: 15px 0;
+            padding-left: 25px;
+        }
+
+        .migration-details li,
+        .error-actions li,
+        .error-recovery li {
+            margin: 8px 0;
+        }
+
+        .warning {
+            background: #fff3cd;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 4px solid #ffc107;
+            margin: 15px 0;
+        }
+
+        .info {
+            background: #d1ecf1;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 4px solid #17a2b8;
+            margin: 15px 0;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: flex-end;
+        }
+
+        .migration-log details {
+            margin-top: 15px;
+        }
+
+        .migration-log summary {
+            cursor: pointer;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            user-select: none;
+        }
+
+        .migration-log summary:hover {
+            background: #e9ecef;
+        }
+
+        .migration-log pre {
+            margin-top: 10px;
+            padding: 15px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 0.85em;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .progress-content p {
+            text-align: center;
+            color: #333;
+            font-size: 1.1em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 Data Migration Test</h1>
+        <p class="subtitle">Test localStorage to Supabase database migration</p>
+
+        <!-- Migration Status Section -->
+        <div class="section">
+            <h2>Migration Status</h2>
+            <div class="status-grid">
+                <div class="status-card">
+                    <h3>Migration Complete</h3>
+                    <div class="value" id="migrationComplete">-</div>
+                </div>
+                <div class="status-card">
+                    <h3>Migration Date</h3>
+                    <div class="value" id="migrationDate">-</div>
+                </div>
+                <div class="status-card">
+                    <h3>Has Local Data</h3>
+                    <div class="value" id="hasLocalData">-</div>
+                </div>
+                <div class="status-card">
+                    <h3>Backup Count</h3>
+                    <div class="value" id="backupCount">-</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Data Section -->
+        <div class="section">
+            <h2>Test Data Setup</h2>
+            <p style="margin-bottom: 15px;">Create sample localStorage data for testing migration:</p>
+            <div class="button-group">
+                <button class="btn-success" onclick="createTestData()">Create Test Data</button>
+                <button class="btn-danger" onclick="clearLocalStorage()">Clear localStorage</button>
+                <button class="btn-secondary" onclick="viewLocalStorage()">View localStorage</button>
+            </div>
+            <div id="dataPreview"></div>
+        </div>
+
+        <!-- Migration Actions Section -->
+        <div class="section">
+            <h2>Migration Actions</h2>
+            <p style="margin-bottom: 15px;">Test the migration functionality:</p>
+            <div class="button-group">
+                <button class="btn-primary" onclick="checkMigrationNeeded()">Check if Migration Needed</button>
+                <button class="btn-primary" onclick="testMigrationPrompt()">Test Migration Prompt</button>
+                <button class="btn-success" onclick="performMigration()">Perform Migration</button>
+                <button class="btn-danger" onclick="rollbackMigration()">Rollback Migration</button>
+            </div>
+        </div>
+
+        <!-- Log Section -->
+        <div class="section">
+            <h2>Activity Log</h2>
+            <div class="log-container" id="logContainer">
+                <div class="log-entry info">Ready to test migration...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/migration-utility.js"></script>
+    <script>
+        // Initialize migration utility (without database services for testing)
+        const migrationUtility = new MigrationUtility();
+
+        // Mock database service for testing
+        const mockDatabaseService = {
+            saveTableData: async (tableId, employeeName, data) => {
+                log(`Mock: Saving data for ${employeeName} in ${tableId}`, 'success');
+                return { success: true };
+            },
+            loadTableData: async (tableId) => {
+                log(`Mock: Loading data for ${tableId}`, 'info');
+                return [];
+            },
+            saveTableConfiguration: async (config) => {
+                log('Mock: Saving table configuration', 'success');
+                return { success: true };
+            },
+            loadTableConfiguration: async () => {
+                log('Mock: Loading table configuration', 'info');
+                return null;
+            },
+            saveEmployeeRecords: async (records) => {
+                log(`Mock: Saving ${records.length} employee records`, 'success');
+                return { success: true };
+            },
+            loadEmployeeRecords: async () => {
+                log('Mock: Loading employee records', 'info');
+                return [];
+            }
+        };
+
+        // Mock auth service for testing
+        const mockAuthService = {
+            logAuditEvent: async (action, resourceType, resourceId, details) => {
+                log(`Mock: Logging audit event - ${action}`, 'info');
+            },
+            getCurrentUser: () => ({ id: 'test-user-123' })
+        };
+
+        // Set mock services
+        migrationUtility.databaseService = mockDatabaseService;
+        migrationUtility.authService = mockAuthService;
+
+        // Update status on load
+        updateStatus();
+
+        function log(message, type = 'info') {
+            const logContainer = document.getElementById('logContainer');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function updateStatus() {
+            const status = migrationUtility.getDatabaseMigrationStatus();
+            
+            document.getElementById('migrationComplete').textContent = status.migrationComplete ? 'Yes' : 'No';
+            document.getElementById('migrationComplete').className = status.migrationComplete ? 'value success' : 'value error';
+            
+            document.getElementById('migrationDate').textContent = status.migrationDate 
+                ? new Date(status.migrationDate).toLocaleString() 
+                : 'Never';
+            
+            document.getElementById('hasLocalData').textContent = status.hasLocalStorageData ? 'Yes' : 'No';
+            document.getElementById('hasLocalData').className = status.hasLocalStorageData ? 'value success' : 'value';
+            
+            document.getElementById('backupCount').textContent = status.backupCount;
+            
+            log('Status updated', 'info');
+        }
+
+        function createTestData() {
+            // Create sample data for each table
+            const tables = [
+                { key: 'tom_analytics_data', name: 'VTI Compliance' },
+                { key: 'tom_analytics_data_2', name: 'VTI DPMO' },
+                { key: 'tom_analytics_data_3', name: 'TA Idle Time' }
+            ];
+
+            tables.forEach(table => {
+                const data = [
+                    { employeeName: 'John Doe', value: 95, date: '2024-01-15' },
+                    { employeeName: 'Jane Smith', value: 88, date: '2024-01-15' },
+                    { employeeName: 'Bob Johnson', value: 92, date: '2024-01-15' }
+                ];
+                localStorage.setItem(table.key, JSON.stringify(data));
+                log(`Created test data for ${table.name}`, 'success');
+            });
+
+            // Create table configuration
+            const config = {
+                tables: [
+                    { id: 'vti-compliance', name: 'VTI Compliance', visible: true },
+                    { id: 'vti-dpmo', name: 'VTI DPMO', visible: true },
+                    { id: 'ta-idle-time', name: 'TA Idle Time', visible: true }
+                ]
+            };
+            localStorage.setItem('table_config', JSON.stringify(config));
+            log('Created table configuration', 'success');
+
+            // Create employee records
+            const employees = [
+                { name: 'John Doe', department: 'Operations' },
+                { name: 'Jane Smith', department: 'Quality' },
+                { name: 'Bob Johnson', department: 'Logistics' }
+            ];
+            localStorage.setItem('employee_records', JSON.stringify(employees));
+            log('Created employee records', 'success');
+
+            updateStatus();
+        }
+
+        function clearLocalStorage() {
+            if (confirm('Are you sure you want to clear all localStorage data?')) {
+                localStorage.clear();
+                log('localStorage cleared', 'warning');
+                updateStatus();
+            }
+        }
+
+        function viewLocalStorage() {
+            const preview = document.getElementById('dataPreview');
+            const data = {};
+            
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                try {
+                    data[key] = JSON.parse(localStorage.getItem(key));
+                } catch {
+                    data[key] = localStorage.getItem(key);
+                }
+            }
+            
+            preview.innerHTML = `
+                <div class="data-preview">
+                    <h3>localStorage Contents</h3>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                </div>
+            `;
+            log('Displayed localStorage contents', 'info');
+        }
+
+        function checkMigrationNeeded() {
+            const needed = migrationUtility.needsDatabaseMigration();
+            log(`Migration needed: ${needed}`, needed ? 'warning' : 'success');
+            alert(`Migration ${needed ? 'IS' : 'IS NOT'} needed`);
+        }
+
+        async function testMigrationPrompt() {
+            log('Showing migration prompt...', 'info');
+            const result = await migrationUtility.showMigrationPrompt();
+            log(`User ${result ? 'confirmed' : 'declined'} migration`, result ? 'success' : 'warning');
+        }
+
+        async function performMigration() {
+            if (!migrationUtility.needsDatabaseMigration()) {
+                alert('No migration needed. Create test data first.');
+                return;
+            }
+
+            log('Starting migration...', 'info');
+            
+            try {
+                const result = await migrationUtility.migrateToDatabase();
+                
+                if (result.success) {
+                    log('Migration completed successfully!', 'success');
+                    log(`Migrated ${result.tableDataCount} records`, 'success');
+                } else {
+                    log('Migration failed', 'error');
+                    result.errors.forEach(err => log(`Error: ${err}`, 'error'));
+                }
+                
+                updateStatus();
+            } catch (error) {
+                log(`Migration error: ${error.message}`, 'error');
+            }
+        }
+
+        async function rollbackMigration() {
+            if (confirm('Are you sure you want to rollback the migration?')) {
+                log('Rolling back migration...', 'warning');
+                
+                try {
+                    await migrationUtility.rollbackDatabaseMigration();
+                    log('Rollback completed', 'success');
+                    updateStatus();
+                } catch (error) {
+                    log(`Rollback error: ${error.message}`, 'error');
+                }
+            }
+        }
+    </script>
+</body>
+</html>
