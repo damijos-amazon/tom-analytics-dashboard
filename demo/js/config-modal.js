@@ -683,6 +683,7 @@ class ConfigModal {
      * @returns {Object} Table configuration object
      */
     getFormData() {
+        console.log('getFormData called');
         // Read directly from input elements since tableConfigForm is a div, not a form
         const tableNameInput = document.getElementById('tableName');
         const displayNameInput = document.getElementById('displayName');
@@ -693,8 +694,14 @@ class ConfigModal {
         const visibleInput = document.getElementById('visible');
         const includeInLeaderboardInput = document.getElementById('includeInLeaderboard');
         
+        console.log('tableNameInput:', tableNameInput, 'value:', tableNameInput?.value);
+        
         const tableName = tableNameInput ? tableNameInput.value.trim() : '';
         const displayName = displayNameInput ? displayNameInput.value.trim() : '';
+        
+        if (!tableName) {
+            throw new Error('Table name is required');
+        }
         
         const config = {
             tableName: tableName,
@@ -750,7 +757,9 @@ class ConfigModal {
     async saveTable() {
         try {
             // Get and validate form data
+            console.log('saveTable called');
             const formData = this.getFormData();
+            console.log('Form data:', formData);
 
             if (this.currentEditingTable) {
                 // Update existing table
