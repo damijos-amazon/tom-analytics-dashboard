@@ -1776,18 +1776,7 @@
                 }
             }
             
-            // Add logout button to header
-            const header = document.querySelector('header') || document.body;
-            const logoutBtn = document.createElement('button');
-            logoutBtn.textContent = '🚪 Logout';
-            logoutBtn.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 10000; background: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;';
-            logoutBtn.onclick = async () => {
-                if (confirm('Are you sure you want to logout?')) {
-                    await authManager.signOut();
-                    window.location.href = 'login.html';
-                }
-            };
-            document.body.appendChild(logoutBtn);
+            // Logout button is now in the navigation panel
             
             // Show user email
             const userEmail = document.createElement('div');
