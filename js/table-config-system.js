@@ -16,7 +16,25 @@ class TableConfigSystem {
      */
     async loadConfig() {
         try {
-            // Priority 1: Try to load from Supabase (if database service is available)
+            // Priority 1: Try to load from localStorage FIRST (user customizations take precedence)
+            const storedConfig = localStorage.getItem('table_config');
+            
+            if (storedConfig) {
+                console.log('Loading configuration from localStorage');
+                const parsedConfig = JSON.parse(storedConfig);
+                const validation = this.validateConfig(parsedConfig);
+                
+                if (validation.valid) {
+                    this.config = parsedConfig;
+                    console.log(`✅ Configuration loaded from localStorage (${parsedConfig.tables.length} tables)`);
+                    return this.config;
+                } else {
+                    console.warn('Stored configuration is invalid:', validation.errors);
+                    // Fall through to Supabase or file
+                }
+            }
+            
+            // Priority 2: Try to load from Supabase (if database service is available)
             if (this.databaseService && typeof this.databaseService.getLatestTableConfiguration === 'function') {
                 try {
                     console.log('Loading configuration from Supabase...');
@@ -35,25 +53,7 @@ class TableConfigSystem {
                     }
                 } catch (supabaseError) {
                     console.warn('Failed to load from Supabase:', supabaseError.message);
-                    // Fall through to localStorage
-                }
-            }
-            
-            // Priority 2: Try to load from localStorage (user customizations)
-            const storedConfig = localStorage.getItem('table_config');
-            
-            if (storedConfig) {
-                console.log('Loading configuration from localStorage');
-                const parsedConfig = JSON.parse(storedConfig);
-                const validation = this.validateConfig(parsedConfig);
-                
-                if (validation.valid) {
-                    this.config = parsedConfig;
-                    console.log('✅ Configuration loaded from localStorage');
-                    return this.config;
-                } else {
-                    console.warn('Stored configuration is invalid:', validation.errors);
-                    // Fall through to load from file
+                    // Fall through to JSON file
                 }
             }
             
