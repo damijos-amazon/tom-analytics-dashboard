@@ -49,78 +49,85 @@ class ConfigModal {
                     
                     <!-- Right: Table Form -->
                     <div class="table-form-section">
-                        <h3 id="formTitle">Add New Table</h3>
+                        <h3 id="formTitle">Add New Metric Table</h3>
+                        <p style="color: #666; font-size: 14px; margin-bottom: 20px;">Create a new table to track a different metric (like Safety, Quality, Attendance, etc.)</p>
                         <form id="tableConfigForm" onsubmit="event.preventDefault(); configModal.saveTable();">
                             <!-- Basic Info -->
                             <div class="form-group">
-                                <label for="tableName">Table Name *</label>
+                                <label for="tableName">What metric are you tracking? *</label>
                                 <input type="text" id="tableName" name="tableName" required 
-                                       placeholder="e.g., VTI Compliance">
+                                       placeholder="e.g., Safety Incidents, Quality Score, Attendance Rate">
+                                <small style="color: #666;">This is the name of your metric</small>
                             </div>
                             
                             <div class="form-group">
-                                <label for="displayName">Display Name</label>
+                                <label for="displayName">Display Name (optional)</label>
                                 <input type="text" id="displayName" name="displayName" 
-                                       placeholder="Leave empty to use Table Name">
+                                       placeholder="Leave empty to use the metric name above">
+                                <small style="color: #666;">How it appears on the dashboard</small>
                             </div>
                             
                             <div class="form-group">
-                                <label for="description">Description</label>
+                                <label for="description">What does this metric measure? (optional)</label>
                                 <textarea id="description" name="description" rows="2" 
-                                          placeholder="Optional description"></textarea>
+                                          placeholder="e.g., Tracks workplace safety incidents per associate"></textarea>
                             </div>
                             
                             <!-- Scoring Config -->
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label for="direction">Scoring Direction *</label>
+                                    <label for="direction">Is higher or lower better? *</label>
                                     <select id="direction" name="direction" required>
-                                        <option value="higher">Higher is Better</option>
-                                        <option value="lower">Lower is Better</option>
+                                        <option value="higher">Higher is Better (like compliance %)</option>
+                                        <option value="lower">Lower is Better (like defects or incidents)</option>
                                     </select>
                                 </div>
                                 
                                 <div class="form-group">
-                                    <label for="defaultBenchmark">Default Benchmark *</label>
+                                    <label for="defaultBenchmark">What's the target goal? *</label>
                                     <input type="number" id="defaultBenchmark" name="defaultBenchmark" 
-                                           step="0.01" required placeholder="e.g., 95">
+                                           step="0.01" required placeholder="e.g., 95 for 95% or 0 for zero defects">
+                                    <small style="color: #666;">The goal your team is trying to reach</small>
                                 </div>
                             </div>
                             
                             <!-- Display Config -->
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label for="color">Theme Color</label>
+                                    <label for="color">Table Color</label>
                                     <input type="color" id="color" name="color" value="#FF9900">
+                                    <small style="color: #666;">Pick a color for this table's header</small>
                                 </div>
                                 
                                 <div class="form-group">
                                     <label class="checkbox-label">
                                         <input type="checkbox" id="visible" name="visible" checked>
-                                        Visible in UI
+                                        Show this table on the dashboard
                                     </label>
                                     <label class="checkbox-label">
                                         <input type="checkbox" id="includeInLeaderboard" name="includeInLeaderboard" checked>
-                                        Include in Leaderboard
+                                        Include in team leaderboard
                                     </label>
                                 </div>
                             </div>
                             
                             <!-- Column Editor -->
                             <div class="form-group">
-                                <label>Columns (leave empty for default columns)</label>
+                                <label>Custom Columns (optional - leave empty for standard columns)</label>
+                                <small style="color: #666; display: block; margin-bottom: 10px;">By default, tables show: Name, Prior Month, Current Month, Change, Status</small>
                                 <div id="columnEditor" class="editor-container"></div>
                                 <button type="button" class="btn btn-secondary btn-sm" onclick="configModal.addColumnField()">
-                                    + Add Column
+                                    + Add Custom Column
                                 </button>
                             </div>
                             
                             <!-- File Pattern Editor -->
                             <div class="form-group">
-                                <label>File Upload Patterns *</label>
+                                <label>What should the uploaded file names contain? *</label>
+                                <small style="color: #666; display: block; margin-bottom: 10px;">When you upload CSV files, they need to match these patterns. Example: if you enter "safety", files named "prior-safety.csv" or "current-safety-incidents.csv" will work.</small>
                                 <div id="patternEditor" class="editor-container"></div>
                                 <button type="button" class="btn btn-secondary btn-sm" onclick="configModal.addPatternField()">
-                                    + Add Pattern
+                                    + Add File Name Pattern
                                 </button>
                             </div>
                             

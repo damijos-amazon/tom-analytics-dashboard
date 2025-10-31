@@ -193,6 +193,7 @@
 .table-item-actions {
     display: flex;
     gap: 8px;
+    justify-content: flex-start;
 }
 
 .btn-sm {
