@@ -9,6 +9,36 @@ class DynamicTableGenerator {
     }
 
     /**
+     * Detect which data columns are available in the dataset
+     * @param {Array} data - Array of data rows
+     * @returns {Object} Object indicating which columns have data
+     */
+    detectAvailableData(data) {
+        if (!data || data.length === 0) {
+            return { hasPriorMonth: true, hasCurrentMonth: true }; // Default to showing all
+        }
+
+        let hasPriorMonth = false;
+        let hasCurrentMonth = false;
+
+        // Check if any row has prior month or current month data
+        for (const row of data) {
+            if (row.priorMonth !== undefined && row.priorMonth !== null && row.priorMonth !== '') {
+                hasPriorMonth = true;
+            }
+            if (row.currentMonth !== undefined && row.currentMonth !== null && row.currentMonth !== '') {
+                hasCurrentMonth = true;
+            }
+            // Early exit if both are found
+            if (hasPriorMonth && hasCurrentMonth) {
+                break;
+            }
+        }
+
+        return { hasPriorMonth, hasCurrentMonth };
+    }
+
+    /**
      * Generate all visible tables from configuration
      */
     generateAllTables() {
@@ -123,9 +153,10 @@ class DynamicTableGenerator {
     /**
      * Generate table header based on column configuration
      * @param {Array|null} columns - Column schema array or null for default columns
+     * @param {Object} dataAvailability - Object indicating which data columns are available
      * @returns {HTMLElement} The thead element
      */
-    generateTableHeader(columns) {
+    generateTableHeader(columns, dataAvailability = { hasPriorMonth: true, hasCurrentMonth: true }) {
         const thead = document.createElement('thead');
         const headerRow = document.createElement('tr');
 
@@ -154,19 +185,21 @@ class DynamicTableGenerator {
         } else {
             // Default columns for backward compatibility
             const defaultColumns = [
-                'Associate Name',
-                'Prior Month',
-                'Current Month',
-                'Change',
-                'Status'
+                { name: 'Associate Name', show: true },
+                { name: 'Prior Month', show: dataAvailability.hasPriorMonth },
+                { name: 'Current Month', show: true },
+                { name: 'Change', show: dataAvailability.hasPriorMonth },
+                { name: 'Status', show: true }
             ];
             
-            defaultColumns.forEach(colName => {
-                const th = document.createElement('th');
-                th.textContent = colName;
-                th.className = 'sortable';
-                th.style.cursor = 'pointer';
-                headerRow.appendChild(th);
+            defaultColumns.forEach(col => {
+                if (col.show) {
+                    const th = document.createElement('th');
+                    th.textContent = col.name;
+                    th.className = 'sortable';
+                    th.style.cursor = 'pointer';
+                    headerRow.appendChild(th);
+                }
             });
         }
 
@@ -206,17 +239,6 @@ class DynamicTableGenerator {
             }
         };
         actionsDiv.appendChild(clearBtn);
-
-        // Edit Benchmark button
-        const benchmarkBtn = document.createElement('button');
-        benchmarkBtn.className = 'btn btn-secondary';
-        benchmarkBtn.textContent = 'Edit Benchmark';
-        benchmarkBtn.setAttribute('data-table-id', tableConfig.tableId);
-        benchmarkBtn.onclick = () => {
-            console.log(`Edit benchmark requested for ${tableConfig.tableId}`);
-            // This will be handled by the dashboard instance
-        };
-        actionsDiv.appendChild(benchmarkBtn);
 
         controls.appendChild(actionsDiv);
 

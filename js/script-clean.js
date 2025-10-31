@@ -930,6 +930,25 @@ class TOMDashboard {
         if (!tableBody) return;
         tableBody.innerHTML = '';
         
+        // Detect available data and update header if needed (only for default columns)
+        const hasCustomColumns = this.columns && this.columns.length > 0 && 
+                                  this.columns[0].id !== 'name'; // Not default columns
+        
+        if (!hasCustomColumns && window.dynamicTableGenerator && this.data && this.data.length > 0) {
+            const dataAvailability = window.dynamicTableGenerator.detectAvailableData(this.data);
+            this.dataAvailability = dataAvailability; // Store for use in createRow
+            
+            // Regenerate header with correct column visibility
+            const table = tableBody.closest('table');
+            if (table) {
+                const thead = table.querySelector('thead');
+                if (thead) {
+                    const newThead = window.dynamicTableGenerator.generateTableHeader(this.columns, dataAvailability);
+                    thead.replaceWith(newThead);
+                }
+            }
+        }
+        
         // Filter out excluded employees
         const employees = window.simpleEmployees || [];
         const filteredData = this.data.filter(row => {
@@ -1018,15 +1037,18 @@ class TOMDashboard {
             
             const statusClass = item.status ? `status-${item.status.toLowerCase()}` : '';
             
+            // Check if we should show prior month and change columns
+            const showPriorMonth = !this.dataAvailability || this.dataAvailability.hasPriorMonth;
+            
             if (isAndonTable) {
                 // Andon Response Time: lower is better, so flip display for clarity
                 const displayChange = -item.change; // Flip the sign for display
                 tr.innerHTML = `
                     <td>${index + 1}</td>
                     <td>${displayName}</td>
-                    <td>${item.priorMonth.toFixed(2)}</td>
+                    ${showPriorMonth ? `<td>${item.priorMonth.toFixed(2)}</td>` : ''}
                     <td>${item.currentMonth.toFixed(2)}</td>
-                    <td class="${changeClass}">${displayChange > 0 ? '+' : ''}${displayChange.toFixed(2)}</td>
+                    ${showPriorMonth ? `<td class="${changeClass}">${displayChange > 0 ? '+' : ''}${displayChange.toFixed(2)}</td>` : ''}
                     <td>${item.status ? `<span class="${statusClass}">${item.status}</span>` : ''}</td>
                     <td><button class="btn-delete" onclick="dashboards['${this.tableId}'].deleteRow(${index})">🗑️</button></td>
                 `;
@@ -1036,9 +1058,9 @@ class TOMDashboard {
                 tr.innerHTML = `
                     <td>${index + 1}</td>
                     <td>${displayName}</td>
-                    <td>${Math.round(item.priorMonth)}</td>
+                    ${showPriorMonth ? `<td>${Math.round(item.priorMonth)}</td>` : ''}
                     <td>${Math.round(item.currentMonth)}</td>
-                    <td class="${changeClass}">${displayChange > 0 ? '+' : ''}${displayChange.toFixed(2)}</td>
+                    ${showPriorMonth ? `<td class="${changeClass}">${displayChange > 0 ? '+' : ''}${displayChange.toFixed(2)}</td>` : ''}
                     <td>${item.status ? `<span class="${statusClass}">${item.status}</span>` : ''}</td>
                     <td><button class="btn-delete" onclick="dashboards['${this.tableId}'].deleteRow(${index})">🗑️</button></td>
                 `;
@@ -1049,9 +1071,9 @@ class TOMDashboard {
                 tr.innerHTML = `
                     <td>${index + 1}</td>
                     <td>${displayName}</td>
-                    <td>${item.priorMonth.toFixed(2)}</td>
+                    ${showPriorMonth ? `<td>${item.priorMonth.toFixed(2)}</td>` : ''}
                     <td>${item.currentMonth.toFixed(2)}</td>
-                    <td class="${changeClass}">${displayChange > 0 ? '+' : ''}${displayChange.toFixed(2)}</td>
+                    ${showPriorMonth ? `<td class="${changeClass}">${displayChange > 0 ? '+' : ''}${displayChange.toFixed(2)}</td>` : ''}
                     <td>${item.status ? `<span class="${statusClass}">${item.status}</span>` : ''}</td>
                     <td><button class="btn-delete" onclick="dashboards['${this.tableId}'].deleteRow(${index})">🗑️</button></td>
                 `;
@@ -1060,9 +1082,9 @@ class TOMDashboard {
                 tr.innerHTML = `
                     <td>${index + 1}</td>
                     <td>${displayName}</td>
-                    <td>${item.priorMonth.toFixed(2)}%</td>
+                    ${showPriorMonth ? `<td>${item.priorMonth.toFixed(2)}%</td>` : ''}
                     <td>${item.currentMonth.toFixed(2)}%</td>
-                    <td class="${changeClass}">${item.change > 0 ? '+' : ''}${item.change.toFixed(2)}%</td>
+                    ${showPriorMonth ? `<td class="${changeClass}">${item.change > 0 ? '+' : ''}${item.change.toFixed(2)}%</td>` : ''}
                     <td>${item.status ? `<span class="${statusClass}">${item.status}</span>` : ''}</td>
                     <td><button class="btn-delete" onclick="dashboards['${this.tableId}'].deleteRow(${index})">🗑️</button></td>
                 `;
