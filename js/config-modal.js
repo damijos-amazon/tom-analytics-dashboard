@@ -633,7 +633,7 @@ class ConfigModal {
             
         } catch (error) {
             console.error('Failed to toggle visibility:', error);
-            this.showMessage(`Error: ${error.message}`, 'error');
+            this.showMessage(`Error: ${error.message || error.toString() || 'Unknown error'}`, 'error');
         }
     }
 
@@ -676,7 +676,7 @@ class ConfigModal {
             
         } catch (error) {
             console.error('Failed to delete table:', error);
-            this.showMessage(`Error: ${error.message}`, 'error');
+            this.showMessage(`Error: ${error.message || error.toString() || 'Unknown error'}`, 'error');
         }
     }
 
@@ -799,7 +799,7 @@ class ConfigModal {
 
         } catch (error) {
             console.error('Failed to save table:', error);
-            this.showMessage(`Error: ${error.message}`, 'error');
+            this.showMessage(`Error: ${error.message || error.toString() || 'Unknown error'}`, 'error');
         }
     }
 
