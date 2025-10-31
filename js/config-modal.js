@@ -604,13 +604,12 @@ class ConfigModal {
 
             const newVisibility = !tableConfig.visible;
             
+            // Update visibility
+            this.configSystem.toggleTableVisibility(tableId, newVisibility);
+            
             // When hiding, also exclude from leaderboard
             // When showing, restore leaderboard inclusion
-            tableConfig.visible = newVisibility;
-            tableConfig.includeInLeaderboard = newVisibility;
-            
-            // Save updated configuration
-            await this.configSystem.saveTableConfig(tableConfig);
+            this.configSystem.toggleLeaderboardInclusion(tableId, newVisibility);
             
             // Update dashboard manager if it exists
             if (this.dashboardManager) {
