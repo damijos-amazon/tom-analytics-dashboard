@@ -127,7 +127,7 @@ class ConfigModal {
                                 <small style="color: #666; display: block; margin-bottom: 10px;">When you upload CSV files, they need to match these patterns. Example: if you enter "safety", files named "prior-safety.csv" or "current-safety-incidents.csv" will work.</small>
                                 <div id="patternEditor" class="editor-container"></div>
                                 <button type="button" class="btn btn-secondary btn-sm" onclick="configModal.addPatternField()">
-                                    + Add File Name Pattern
+                                    + Add File Name Rule
                                 </button>
                             </div>
                             
@@ -520,34 +520,31 @@ class ConfigModal {
         patternItem.className = 'editor-item pattern-item';
         patternItem.innerHTML = `
             <div class="editor-item-header">
-                <div class="editor-item-title">Pattern ${patternIndex + 1}</div>
+                <div class="editor-item-title">File Name Rule ${patternIndex + 1}</div>
                 <button type="button" class="remove-btn" onclick="this.closest('.pattern-item').remove()">Remove</button>
             </div>
             <div class="editor-item-fields">
                 <div class="editor-field">
-                    <label>Pattern *</label>
-                    <input type="text" name="patternValue" value="${pattern.pattern}" placeholder="e.g., vti-compliance" required>
+                    <label>What word should be in the file name? *</label>
+                    <input type="text" name="patternValue" value="${pattern.pattern}" placeholder="e.g., safety, quality, attendance" required>
+                    <small style="color: #666;">Files with this word will be recognized for this table</small>
                 </div>
                 <div class="editor-field">
-                    <label>Pattern Type</label>
+                    <label>How should it match?</label>
                     <select name="patternType">
-                        <option value="exact" ${pattern.type === 'exact' ? 'selected' : ''}>Exact Match</option>
-                        <option value="contains" ${pattern.type === 'contains' ? 'selected' : ''}>Contains</option>
-                        <option value="prefix" ${pattern.type === 'prefix' ? 'selected' : ''}>Starts With</option>
-                        <option value="suffix" ${pattern.type === 'suffix' ? 'selected' : ''}>Ends With</option>
+                        <option value="contains" ${pattern.type === 'contains' ? 'selected' : ''}>File name contains this word (recommended)</option>
+                        <option value="exact" ${pattern.type === 'exact' ? 'selected' : ''}>File name is exactly this</option>
+                        <option value="prefix" ${pattern.type === 'prefix' ? 'selected' : ''}>File name starts with this</option>
+                        <option value="suffix" ${pattern.type === 'suffix' ? 'selected' : ''}>File name ends with this</option>
                     </select>
-                </div>
-                <div class="editor-field">
-                    <label>Priority (lower = higher priority)</label>
-                    <input type="number" name="patternPriority" value="${pattern.priority}" min="1" placeholder="1">
-                </div>
-                <div class="editor-field">
-                    <label>Exclude Patterns (comma-separated)</label>
-                    <input type="text" name="patternExclude" value="${pattern.exclude ? pattern.exclude.join(', ') : ''}" placeholder="e.g., dpmo, test">
+                    <small style="color: #666;">Most people use "contains" - it's the most flexible</small>
                 </div>
                 <div class="editor-field editor-field-full">
-                    <label style="font-size: 11px; color: #999;">
-                        💡 Examples: "prior-vti" (exact), "vti" (contains), "current-" (prefix), "-data" (suffix)
+                    <label style="font-size: 12px; color: #666; font-weight: normal;">
+                        💡 <strong>Example:</strong> If you enter "safety" and choose "contains", these files will work:<br>
+                        &nbsp;&nbsp;&nbsp;✓ prior-safety.csv<br>
+                        &nbsp;&nbsp;&nbsp;✓ current-safety-incidents.csv<br>
+                        &nbsp;&nbsp;&nbsp;✓ safety-data-march.csv
                     </label>
                 </div>
             </div>
