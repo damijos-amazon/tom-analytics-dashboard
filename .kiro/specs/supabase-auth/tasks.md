@@ -77,6 +77,8 @@
 - [ ] 7. Integrate Supabase sync into TOMDashboard class
   - Modify renderTable() to sync to Supabase
 
+
+
   - Modify persistData() to use Supabase
   - Modify loadData() to use Supabase
   - Add fallback to localStorage on error
