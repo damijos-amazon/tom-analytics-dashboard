@@ -263,7 +263,7 @@ class AuthManager {
             const { error } = await this.supabase.auth.resetPasswordForEmail(
                 email.toLowerCase(),
                 {
-                    redirectTo: `${window.location.origin}/demo/reset-password.html`
+                    redirectTo: 'https://damijos-amazon.github.io/tom-analytics-dashboard/reset-password.html'
                 }
             );
             
