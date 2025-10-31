@@ -46,7 +46,13 @@
         .logo {
             text-align: center;
             font-size: 60px;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
+        }
+
+        .logo img {
+            width: 350px;
+            height: 350px;
+            object-fit: contain;
         }
 
         h1 {
@@ -75,7 +81,8 @@
             font-size: 14px;
         }
 
-        input[type="email"] {
+        input[type="email"],
+        input[type="password"] {
             width: 100%;
             padding: 15px;
             border: 2px solid #e0e0e0;
@@ -84,7 +91,8 @@
             transition: all 0.3s ease;
         }
 
-        input[type="email"]:focus {
+        input[type="email"]:focus,
+        input[type="password"]:focus {
             outline: none;
             border-color: #FF9900;
             box-shadow: 0 0 0 3px rgba(255, 153, 0, 0.1);
@@ -189,7 +197,7 @@
 <body>
     <div class="login-container">
         <div class="logo">
-            <img src="assets/logos/TOM-NA.png" alt="TOM" style="width: 250px; height: 250px; object-fit: contain;">
+            <img src="assets/logos/TOM-NA.png" alt="TOM">
         </div>
         <h1>TOM Analytics Dashboard</h1>
         <p class="subtitle">Analytics • Recognition • 1:1 Thrives • Shout Outs • Employee of the Month</p>
