@@ -71,8 +71,8 @@ class AuthManager {
             
             // Send magic link
             const redirectUrl = window.location.origin.includes('github.io') 
-                ? 'https://damijos-amazon.github.io/tom-analytics-dashboard/index.html'
-                : window.location.origin + '/index.html';
+                ? 'https://damijos-amazon.github.io/tom-analytics-dashboard/'
+                : window.location.origin + '/';
             
             const { data, error } = await this.supabase.auth.signInWithOtp({
                 email: email.toLowerCase(),
