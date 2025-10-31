@@ -273,11 +273,21 @@ class ConfigModal {
             });
         }
 
-        // Set default values
-        document.getElementById('color').value = '#FF9900';
-        document.getElementById('visible').checked = true;
-        document.getElementById('includeInLeaderboard').checked = true;
-        document.getElementById('direction').value = 'higher';
+        // Set default values AFTER reset
+        const colorInput = document.getElementById('color');
+        const visibleInput = document.getElementById('visible');
+        const leaderboardInput = document.getElementById('includeInLeaderboard');
+        const directionInput = document.getElementById('direction');
+        
+        if (colorInput) colorInput.value = '#FF9900';
+        if (visibleInput) visibleInput.checked = true;
+        if (leaderboardInput) leaderboardInput.checked = true;
+        if (directionInput) directionInput.value = 'higher';
+        
+        console.log('Form defaults set:', {
+            visible: visibleInput?.checked,
+            includeInLeaderboard: leaderboardInput?.checked
+        });
 
         // Clear editors
         document.getElementById('columnEditor').innerHTML = '';
@@ -705,6 +715,12 @@ class ConfigModal {
             throw new Error('Table name is required');
         }
         
+        // Log checkbox states for debugging
+        console.log('Checkbox states:', {
+            visible: visibleInput?.checked,
+            includeInLeaderboard: includeInLeaderboardInput?.checked
+        });
+        
         const config = {
             tableName: tableName,
             displayName: displayName || tableName,
@@ -715,6 +731,8 @@ class ConfigModal {
             visible: visibleInput ? visibleInput.checked : true,
             includeInLeaderboard: includeInLeaderboardInput ? includeInLeaderboardInput.checked : true
         };
+        
+        console.log('Config being saved:', config);
 
         // Extract columns
         config.columns = this.extractColumnsFromForm();
