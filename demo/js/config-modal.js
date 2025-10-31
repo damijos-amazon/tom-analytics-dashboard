@@ -705,14 +705,21 @@ class ConfigModal {
             formData.get = function(key) { return this.has(key) ? this.get(key) : null; };
         }
 
-        // Extract basic fields
+        // Extract basic fields with null checks
+        const tableName = formData.get('tableName');
+        const displayName = formData.get('displayName');
+        const description = formData.get('description');
+        const direction = formData.get('direction');
+        const defaultBenchmark = formData.get('defaultBenchmark');
+        const color = formData.get('color');
+        
         const config = {
-            tableName: formData.get('tableName').trim(),
-            displayName: formData.get('displayName').trim() || formData.get('tableName').trim(),
-            description: formData.get('description')?.trim() || '',
-            direction: formData.get('direction'),
-            defaultBenchmark: parseFloat(formData.get('defaultBenchmark')),
-            color: formData.get('color') || '#FF9900',
+            tableName: tableName ? tableName.trim() : '',
+            displayName: (displayName ? displayName.trim() : '') || (tableName ? tableName.trim() : ''),
+            description: description ? description.trim() : '',
+            direction: direction || 'higher',
+            defaultBenchmark: defaultBenchmark ? parseFloat(defaultBenchmark) : 0,
+            color: color || '#FF9900',
             visible: document.getElementById('visible').checked,
             includeInLeaderboard: document.getElementById('includeInLeaderboard').checked
         };
