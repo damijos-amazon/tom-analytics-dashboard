@@ -619,10 +619,6 @@ class TOMDashboard {
         }
     }
 
-            return newData;
-        }
-    }
-
     // Convert Excel column letter to array index (A=0, B=1, AA=26, etc.)
     excelColumnToIndex(column) {
         let index = 0;
