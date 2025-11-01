@@ -563,6 +563,14 @@ class TOMDashboard {
         const hasCustomMapping = this.columns && this.columns.length > 0 && 
                                   this.columns.some(col => col.fileColumnMapping);
         
+        console.log(`📋 Parsing ${filename}:`, {
+            tableId: this.tableId,
+            hasColumns: !!this.columns,
+            columnCount: this.columns?.length || 0,
+            hasCustomMapping: hasCustomMapping,
+            columns: this.columns
+        });
+        
         if (hasCustomMapping) {
             // Custom column mapping: parse based on column schema
             // Skip header row
@@ -605,86 +613,9 @@ class TOMDashboard {
             
             return newData;
         } else {
-            // Default parsing logic (backward compatibility)
-            // Skip header row
-            for (let i = 1; i < rows.length; i++) {
-                const row = rows[i];
-                let userName = null;
-                let value = null;
-
-                // Determine column mappings based on file type
-                if (name.includes('ta-idle-time')) {
-                    // TA Idle Time: Column B (Driver), Column E (Idle Time)
-                    userName = this.cleanValue(row[1]); // Column B
-                    const rawValue = this.cleanValue(row[4]); // Column E
-                    value = parseFloat(rawValue);
-                } else if (name.includes('seal-validation')) {
-                    // Seal Validation: Search for actual usernames in the row
-                    userName = null;
-                    for (let col = 0; col < row.length; col++) {
-                        const cellValue = this.cleanValue(row[col]);
-                        if (cellValue && /^[a-z]{6,12}$/.test(cellValue) && 
-                            (cellValue === 'smleean' || cellValue === 'antoiche' || 
-                             cellValue === 'shiechre' || cellValue === 'jahaynev' || 
-                             cellValue === 'messiety' || cellValue === 'johnmowe' ||
-                             cellValue === 'raymogrl' || cellValue === 'morriyas' ||
-                             cellValue === 'jennimfr' || /^[a-z]{6,12}$/.test(cellValue))) {
-                            userName = cellValue;
-                            break;
-                        }
-                    }
-                    
-                    // Get accuracy value from Column AG (Andon Input Inaccuracy %)
-                    const rawValue = this.cleanValue(row[32]); // Column AG - index 32
-                    value = parseFloat(rawValue);
-                    
-                    // Convert accuracy values: 0 = 100%, 0.9333 = 93.33%
-                    if (!isNaN(value)) {
-                        if (value === 0) {
-                            value = 100.00;
-                        } else if (value > 0 && value <= 1) {
-                            value = value * 100;
-                        }
-                    } else {
-                        value = 100.00; // Default if no valid value
-                    }
-                    
-                } else if (name.includes('andon-response-time')) {
-                    // Andon Response Time: Column T (executing_user), Column AE (andon_response_time)
-                    userName = this.cleanValue(row[19]); // Column T (20th column, 0-indexed = 19)
-                    const rawValue = this.cleanValue(row[30]); // Column AE (31st column, 0-indexed = 30)
-                    value = parseFloat(rawValue);
-                } else if (name.includes('andons-completed')) {
-                    // Andons Completed: Column A (Associate Name), Column B (Count)
-                    userName = this.cleanValue(row[0]); // Column A
-                    const rawValue = this.cleanValue(row[1]); // Column B
-                    value = parseFloat(rawValue) || 0;
-                } else if (name.includes('ppo-compliance')) {
-                    // PPO Compliance: Column A (Associate Name), Column B (Prior/Current Month)
-                    userName = this.cleanValue(row[0]); // Column A
-                    const rawValue = this.cleanValue(row[1]); // Column B
-                    value = parseFloat(rawValue);
-                    // Store raw violation count (0 = no violations, higher = more violations)
-                    // If value is between 0 and 1 (like 0.9333), treat it as a decimal count, not percentage
-                    // Keep as-is: 0 = 0 violations, 1 = 1 violation, 0.5 = 0.5 violations
-                } else if (name.includes('vti-dpmo')) {
-                    // VTI DPMO: Column A (Associate Name), Column B (Prior/Current Month)
-                    userName = this.cleanValue(row[0]); // Column A
-                    const rawValue = this.cleanValue(row[1]); // Column B
-                    value = parseFloat(rawValue);
-                    // Store raw violation count (0 = no violations, higher = more violations)
-                    // If value is between 0 and 1 (like 0.9333), treat it as a decimal count, not percentage
-                    // Keep as-is: 0 = 0 violations, 1 = 1 violation, 0.5 = 0.5 violations
-                } else {
-                    // VTI Compliance table: Prior Month % pulls from file name prior-vti with header name Relay VTI % (100% Capped)
-                    // VTI Compliance table: Current Month % pulls from file name current-vti with header name Relay VTI % (100% Capped)
-                    // Both prior-vti and current-vti pull from Column letter I
-                    userName = this.cleanValue(row[4]); // Column E → user_id → Associate Name column
-                    const rawValue = this.cleanValue(row[8]); // Column I → Relay VTI % (100% Capped)
-                    value = parseFloat(rawValue);
-                    // Convert decimal to percentage if value is between 0 and 1
-                    if (!isNaN(value) && value > 0 && value <= 1) {
-                        value = value * 100; // Convert 0.9333 to 93.33%
+            // No custom mapping and no hardcoded logic - table must define columns in config
+            console.error(`Table ${this.tableId} has no column mapping defined. Please add columns to table-config.json`);
+            return [];
                     }
                 }
 
