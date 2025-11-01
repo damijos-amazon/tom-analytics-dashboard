@@ -576,6 +576,16 @@ class TOMDashboard {
                         const colIndex = this.excelColumnToIndex(column.fileColumnMapping);
                         const rawValue = this.cleanValue(row[colIndex]);
                         
+                        // Handle prior/current file detection for priorMonth and currentMonth columns
+                        if (column.id === 'priorMonth' && !isPrior) {
+                            // Skip priorMonth column if this is a current file
+                            return;
+                        }
+                        if (column.id === 'currentMonth' && !isCurrent) {
+                            // Skip currentMonth column if this is a prior file
+                            return;
+                        }
+                        
                         // Parse value based on data type
                         if (column.dataType === 'number' || column.dataType === 'percentage') {
                             rowData[column.id] = parseFloat(rawValue) || 0;
@@ -587,8 +597,8 @@ class TOMDashboard {
                     }
                 });
                 
-                // Only add row if it has valid data
-                if (Object.keys(rowData).length > 0) {
+                // Only add row if it has valid data and a name
+                if (Object.keys(rowData).length > 0 && rowData.name) {
                     newData.push(rowData);
                 }
             }
