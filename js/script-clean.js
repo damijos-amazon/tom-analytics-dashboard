@@ -654,6 +654,11 @@ class TOMDashboard {
                     userName = this.cleanValue(row[19]); // Column T (20th column, 0-indexed = 19)
                     const rawValue = this.cleanValue(row[30]); // Column AE (31st column, 0-indexed = 30)
                     value = parseFloat(rawValue);
+                } else if (name.includes('andons-completed')) {
+                    // Andons Completed: Column A (Associate Name), Column B (Count)
+                    userName = this.cleanValue(row[0]); // Column A
+                    const rawValue = this.cleanValue(row[1]); // Column B
+                    value = parseFloat(rawValue) || 0;
                 } else if (name.includes('ppo-compliance')) {
                     // PPO Compliance: Column A (Associate Name), Column B (Prior/Current Month)
                     userName = this.cleanValue(row[0]); // Column A

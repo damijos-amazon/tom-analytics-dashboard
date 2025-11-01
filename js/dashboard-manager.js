@@ -58,20 +58,14 @@ class DashboardManager {
         }
         
         // Create Dashboard instance
-        // Note: TOMDashboard constructor expects (tableId, podiumId, storageKey)
-        // Link the podium to this dashboard
+        // Pass the full tableConfig object so TOMDashboard can access columns
         const podiumId = `podium_${tableConfig.tableBodyId}`;
         
         const dashboard = new TOMDashboard(
-            tableConfig.tableBodyId,
+            tableConfig,
             podiumId,
             tableConfig.storageKey
         );
-        
-        // Store additional config data on the dashboard instance
-        dashboard.tableConfig = tableConfig;
-        dashboard.direction = tableConfig.direction;
-        dashboard.defaultBenchmark = tableConfig.defaultBenchmark;
         
         // Store in both the new tableId and legacy tableBodyId for backward compatibility
         this.dashboards[tableId] = dashboard;
