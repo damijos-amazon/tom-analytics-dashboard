@@ -616,17 +616,7 @@ class TOMDashboard {
             // No custom mapping and no hardcoded logic - table must define columns in config
             console.error(`Table ${this.tableId} has no column mapping defined. Please add columns to table-config.json`);
             return [];
-                    }
-                }
-
-                if (userName && userName.trim() !== '' && value !== null && !isNaN(value) && value >= 0) {
-                    newData.push({
-                        name: userName.trim(),
-                        priorMonth: isPrior ? value : 0,
-                        currentMonth: isCurrent ? value : 0
-                    });
-                }
-            }
+        }
 
             // For files that need averaging (VTI Compliance, TA Idle Time, Seal Validation, Andon Response Time)
             if (name.includes('vti') && !name.includes('dpmo') || name.includes('ta-idle-time') || name.includes('seal-validation') || name.includes('andon-response-time')) {
