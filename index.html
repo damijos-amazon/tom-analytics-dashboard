@@ -1163,6 +1163,9 @@
     <script src="js/supabase-sync-manager.js"></script>
     <script src="js/data-migration-service.js"></script>
     
+    <!-- Global Utilities (must load first) -->
+    <script>document.write('<script src="js/global-utilities.js?v=' + cacheBuster + '"><\/script>');</script>
+    
     <!-- Dynamic cache busting - automatically loads latest files -->
     <script>document.write('<script src="js/script-clean.js?v=' + cacheBuster + '"><\/script>');</script>
     <script>document.write('<script src="js/benchmark-modal.js?v=' + cacheBuster + '"><\/script>');</script>

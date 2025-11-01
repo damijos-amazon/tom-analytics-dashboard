@@ -47,16 +47,19 @@ class TOMDashboard {
     }
 
     setupEventListeners() {
-        // Setup file upload listeners ONLY ONCE for the first dashboard
-        if (this.tableId === 'tableBody' && !window._fileUploadListenersSetup) {
+        // Setup file upload listeners ONLY ONCE
+        if (!window._fileUploadListenersSetup) {
             const fileInput = document.getElementById('fileInput');
             const uploadArea = document.getElementById('uploadArea');
             if (fileInput && uploadArea) {
                 uploadArea.addEventListener('click', () => fileInput.click());
                 fileInput.addEventListener('change', (e) => {
-                    // Route files using the first dashboard's routing method
-                    if (window.dashboards && window.dashboards['tableBody']) {
-                        window.dashboards['tableBody'].routeFilesToTables(e.target.files);
+                    // Route files dynamically using the first available dashboard
+                    const firstDashboard = window.dashboards ? Object.values(window.dashboards)[0] : null;
+                    if (firstDashboard && typeof firstDashboard.routeFilesToTables === 'function') {
+                        firstDashboard.routeFilesToTables(e.target.files);
+                    } else {
+                        console.error('No dashboard available to handle file upload');
                     }
                 });
                 window._fileUploadListenersSetup = true;
@@ -67,9 +70,12 @@ class TOMDashboard {
 
     setupDragAndDrop() {
         // Setup file drag & drop ONLY ONCE for the upload area
-        if (this.tableId === 'tableBody' && !window._dragDropListenersSetup) {
+        if (!window._dragDropListenersSetup) {
             const uploadArea = document.getElementById('uploadArea');
-            if (!uploadArea) return;
+            if (!uploadArea) {
+                console.warn('Upload area not found, skipping drag & drop setup');
+                return;
+            }
 
             uploadArea.addEventListener('dragover', (e) => {
                 e.preventDefault();
@@ -88,9 +94,13 @@ class TOMDashboard {
                 e.stopPropagation();
                 uploadArea.classList.remove('dragover');
                 console.log('🎯 Drop event triggered!', e.dataTransfer.files);
-                // Route files using the first dashboard's routing method
-                if (window.dashboards && window.dashboards['tableBody']) {
-                    window.dashboards['tableBody'].routeFilesToTables(e.dataTransfer.files);
+                
+                // Route files dynamically using the first available dashboard
+                const firstDashboard = window.dashboards ? Object.values(window.dashboards)[0] : null;
+                if (firstDashboard && typeof firstDashboard.routeFilesToTables === 'function') {
+                    firstDashboard.routeFilesToTables(e.dataTransfer.files);
+                } else {
+                    console.error('No dashboard available to handle file upload');
                 }
             });
             
@@ -164,15 +174,37 @@ class TOMDashboard {
         const rows = Array.from(tableBody.querySelectorAll('.table-row'));
         const newOrder = [];
         
-        rows.forEach(row => {
-            const name = row.cells[1].textContent;
-            const dataItem = this.data.find(item => item.name === name);
-            if (dataItem) {
-                newOrder.push(dataItem);
+        rows.forEach((row, index) => {
+            // Try to get identifier from data-attribute first
+            const rowId = row.getAttribute('data-row-id');
+            if (rowId) {
+                const dataItem = this.data.find(item => item.id === rowId || item.name === rowId);
+                if (dataItem) {
+                    newOrder.push(dataItem);
+                    return;
+                }
+            }
+            
+            // Fallback: try to find by name in second cell (index 1)
+            if (row.cells && row.cells.length > 1) {
+                const name = row.cells[1].textContent.trim();
+                const dataItem = this.data.find(item => 
+                    item.name === name || 
+                    item.associateName === name ||
+                    item['Associate Name'] === name
+                );
+                if (dataItem) {
+                    newOrder.push(dataItem);
+                }
             }
         });
         
-        this.data = newOrder;
+        // Only update if we found all items
+        if (newOrder.length === this.data.length) {
+            this.data = newOrder;
+        } else {
+            console.warn(`updateDataOrder: Found ${newOrder.length} items but expected ${this.data.length}`);
+        }
     }
 
     updateRanks() {
@@ -1021,6 +1053,10 @@ class TOMDashboard {
         const tr = document.createElement('tr');
         tr.className = 'table-row';
         tr.draggable = true;
+        
+        // Add data attribute for reliable row identification
+        const rowId = item.id || item.name || item.associateName || item['Associate Name'] || index;
+        tr.setAttribute('data-row-id', rowId);
         
         // Check if using custom columns or default columns
         const hasCustomColumns = this.columns && this.columns.length > 0 && 
