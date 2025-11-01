@@ -617,11 +617,7 @@ class TOMDashboard {
             console.error(`Table ${this.tableId} has no column mapping defined. Please add columns to table-config.json`);
             return [];
         }
-
-            // For files that need averaging (VTI Compliance, TA Idle Time, Seal Validation, Andon Response Time)
-            if (name.includes('vti') && !name.includes('dpmo') || name.includes('ta-idle-time') || name.includes('seal-validation') || name.includes('andon-response-time')) {
-                return this.averageDataByUser(newData, isPrior, isCurrent);
-            }
+    }
 
             return newData;
         }
