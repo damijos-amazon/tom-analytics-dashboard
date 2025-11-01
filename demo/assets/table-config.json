@@ -221,6 +221,65 @@
           "fileColumnMapping": "AE"
         }
       ]
+    },
+    {
+      "tableId": "andons-completed",
+      "tableName": "Andons Completed",
+      "displayName": "Andons Completed",
+      "description": "Tracking overall monthly andons completed by each TA.",
+      "tableBodyId": "tableBody7",
+      "storageKey": "tom_analytics_data_7",
+      "direction": "higher",
+      "defaultBenchmark": 0,
+      "color": "#ff9900",
+      "visible": true,
+      "includeInLeaderboard": true,
+      "filePatterns": [
+        {
+          "pattern": "prior-andons-completed",
+          "type": "exact",
+          "priority": 1
+        },
+        {
+          "pattern": "current-andons-completed",
+          "type": "exact",
+          "priority": 1
+        },
+        {
+          "pattern": "andons-completed",
+          "type": "contains",
+          "priority": 2
+        }
+      ],
+      "columns": [
+        {
+          "id": "name",
+          "label": "Associate Name",
+          "dataType": "text",
+          "visible": true,
+          "sortable": true,
+          "editable": false,
+          "fileColumnMapping": "A"
+        },
+        {
+          "id": "priorMonth",
+          "label": "Prior Month",
+          "dataType": "number",
+          "visible": true,
+          "sortable": true,
+          "editable": false,
+          "fileColumnMapping": "B"
+        },
+        {
+          "id": "currentMonth",
+          "label": "Current Month",
+          "dataType": "number",
+          "visible": true,
+          "sortable": true,
+          "editable": false,
+          "fileColumnMapping": "B"
+        }
+      ]
     }
   ]
 }
